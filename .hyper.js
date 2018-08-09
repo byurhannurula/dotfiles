@@ -1,14 +1,22 @@
 module.exports = {
-  updateChannel: 'canary',
   config: {
-    fontSize: 20,
+    updateChannel: 'stable',
+    windowSize: [960, 580],
+    fontSize: 14,
     fontFamily: '"Operator Mono", "Inconsolata for Powerline", Hack, Menlo monospace',
     cursorShape: 'BLOCK',
     cursorBlink: false,
+    cursorColor: '#FFFFFF',
     wickedBorder: true,
-    padding: '20px',
-    shell: '/bin/zsh'
-  },
+    padding: '12px 20px',
+    bell: `false`,
+    shell: '/bin/zsh',
 
-  plugins: [],
+    plugins: ['hyper-tabs-enhanced'],
+
+    hyperTabs: {
+      border: true,
+      tabIconsColored: true,
+    },
+  },
 };
