@@ -1,0 +1,78 @@
+{
+  // EDITOR
+  "editor.fontFamily": "Dank Mono, Operator Mono, Victor Mono, monospace",
+  "editor.fontLigatures": false,
+  "editor.fontWeight": "100",
+  "editor.lineHeight": 23,
+  "editor.fontSize": 14,
+  "editor.tabSize": 2,
+  "editor.wordWrap": "on",
+  "editor.wordWrapColumn": 80,
+  "editor.glyphMargin": false,
+  "editor.tabCompletion": "on",
+  "editor.minimap.enabled": false,
+  "explorer.openEditors.visible": 0,
+  "workbench.statusBar.visible": false,
+  "workbench.activityBar.visible": false,
+  "workbench.tree.renderIndentGuides": "none",
+  "diffEditor.ignoreTrimWhitespace": false,
+
+  // TERMINAL
+  "terminal.integrated.fontSize": 13,
+  "terminal.integrated.fontWeight": "100",
+  "terminal.integrated.fontFamily": "Menlo, monospace",
+  "terminal.integrated.shell.osx": "/usr/local/bin/fish",
+  "terminal.integrated.cursorBlinking": true,
+
+  // THEME
+  "workbench.iconTheme": "vs-minimal",
+  "workbench.colorTheme": "CodeSandbox",
+
+  // FILES
+  "javascript.updateImportsOnFileMove.enabled": "always",
+  "files.autoSave": "onFocusChange",
+  "files.defaultLanguage": "html",
+  "files.associations": {
+    "*.html": "html",
+  },
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascript]": {
+    "editor.tabSize": 2,
+    "editor.rulers": [80],
+    "editor.formatOnSave": false
+  },
+  "[javascriptreact]": {
+    "editor.rulers": [80],
+    "editor.formatOnSave": false
+  },
+  "[json]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  },
+  "emmet.includeLanguages": {
+    "javascript": "javascriptreact",
+    "nunjucks": "html"
+	},
+  "files.exclude": {
+    "**/.DS_Store": true,
+    "**/.cache": true,
+    "**/.git": true,
+    "**/.svn": true,
+    // "**/public": true,
+    "**/node_modules": true,
+    "**/bower_components": true
+  },  
+
+  // ESLINT/PRETTIER
+  "prettier.disableLanguages": ["javascript", "javascriptreact"],
+  "eslint.packageManager": "yarn",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
+
+  // PLUGINS
+  "breadcrumbs.enabled": false,
+  "todohighlight.isEnable": true,
+  // "liveServer.settings.donotShowInfoMsg": true,
+}
