@@ -1,0 +1,101 @@
+{
+	// React
+	"import React": {
+		"prefix": "imr",
+		"scope": "javascript,javascriptreact,typescript,typescriptreact",
+		"body": "import React from 'react'",
+		"description": "import React statement."
+	},
+	"React Stateless Component": {
+		"prefix": "rsc",
+		"scope": "javascript,javascriptreact,typescript,typescriptreact",
+    "body": "import React from 'react';\n\nconst ${1:${TM_FILENAME_BASE}} = () => (\n\t<div>\n\t\t$0\n\t</div>\n);\n\nexport default ${1:${TM_FILENAME_BASE}};",
+    "description": "Creates a stateless React component without PropTypes and ES6 module system"
+  },
+  "React Stateless Component 2": {
+		"prefix": "rscr",
+		"scope": "javascript,javascriptreact,typescript,typescriptreact",
+    "body": "import React from 'react';\n\nconst ${1:${TM_FILENAME_BASE}} = () => {\n\treturn (\n\t\t<div>\n\t\t\t$0\n\t\t</div>\n\t);\n};\n\nexport default ${1:${TM_FILENAME_BASE}};",
+    "description": "Creates a stateless React component without PropTypes and ES6 module system"
+  },
+	"New React Component": {
+		"scope": "javascript,javascriptreact,typescript,typescriptreact",
+		"prefix": "nr",
+		"body": [
+			"import React from 'react'",
+			"",
+			"const $1 = ({ $2 }) => (",
+			"\t$3",
+			")",
+			"",
+			"export default $1"
+		],
+	},
+
+	// Styled Components
+	"import Styled Components": {
+		"prefix": "ims",
+		"body": ["import styled from 'styled-components'", ""]
+	},
+	"New Styled Component": {
+		"prefix": "sc",
+		"scope": "javascript,javascriptreact,typescript,typescriptreact",
+		"body": "export const $1 = styled.$2``",
+		"description": "Create styled component."
+	},
+	"Styled Components Props": {
+		"prefix": ":tp",
+		"body": ["${p => p.theme.$0};"]
+	},
+
+	// Common
+	"Displays a message in the console.": {
+		"prefix": "log",
+		"scope": "javascript,javascriptreact,typescript,typescriptreact",
+		"body": "console.log($1);",
+		"description": "Displays a message in the console."
+	},
+	"Displays a message in the console with lines.": {
+		"prefix": "logg",
+		"scope": "javascript,javascriptreact,typescript,typescriptreact",
+		"body": [
+			"console.log('==============================');",
+			"console.log($1);",
+			"console.log('==============================');"
+		],
+		"description": "Displays a message in the console."
+	},
+
+	"if block": {
+		"prefix": "if",
+		"scope": "javascript,javascriptreact,typescript,typescriptreact",
+		"body": [
+			"if ($0) {",
+			"  $1",
+			"}"
+		],
+		"description": "if block"
+	},
+
+	"Arrow Function": {
+		"prefix": "af",
+		"scope": "javascript,javascriptreact,typescript,typescriptreact",
+		"body": "const $1 = ($2) => {$3}",
+		"description": "Use arrow function."
+	},
+
+	// All
+	"TODO Helper": {
+		"prefix": "td",
+		"scope": "javascript,javascriptreact,typescript,typescriptreact",
+		"body": "// TODO: ",
+		"description": "Add todo comment."
+	},
+	"FIXME Helper": {
+		"prefix": "fixme",
+		"scope": "javascript,javascriptreact,typescript,typescriptreact",
+		"body": "// FIXME: ",
+		"description": "Add fixme comment."
+	}
+
+}
