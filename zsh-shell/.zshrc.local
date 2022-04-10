@@ -1,0 +1,80 @@
+export TERM=xterm-256color
+
+# THEME
+ZSH_THEME="robbyrussell"
+
+# PATH Things
+export PATH="$HOME/bin:/usr/local/bin:$PATH"
+export PATH="/usr/local/bin:$PATH:./node_modules/.bin";
+export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
+
+# ZSH
+export ZSH="/Users/byurhanbeyzat/.oh-my-zsh"
+source $ZSH/oh-my-zsh.sh
+
+# NVM
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+
+export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
+export PATH=$PATH:/opt/gradle/gradle-7.1.1/bin
+
+export ANDROID_HOME=$HOME/android
+export PATH=$ANDROID_HOME/cmdline-tools/tools/bin/:$PATH
+export PATH=$ANDROID_HOME/emulator/:$PATH
+export PATH=$ANDROID_HOME/platform-tools/:$PATH
+export PATH=$ANDROID_HOME/build-tools/30.0.2/:$PATH
+
+# Plugins
+plugins=(git zsh-completions zsh-autosuggestions history-substring-search)
+source ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
+# source ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+
+cd ~/dev
+
+# Custom Aliases
+alias c="clear";
+alias config="code ~/.zshrc"
+alias pig="echo 'Pinging Google' && ping www.google.com";
+alias pils="echo 'Pinging Local Server' && ping 10.0.20.100";
+alias deleteDSFiles="find . -name '.DS_Store' -type f -delete"
+alias flushdns="sudo dscacheutil -flushcache;sudo killall -HUP mDNSResponder"
+alias showFiles='defaults write com.apple.finder AppleShowAllFiles YES; killall Finder /System/Library/CoreServices/Finder.app'
+alias hideFiles='defaults write com.apple.finder AppleShowAllFiles NO; killall Finder /System/Library/CoreServices/Finder.app'
+alias upall="yarn global upgrade && npm update -g && brew doctor && brew upgrade"
+##########################################################################
+
+# Convenient MySQL CLI aliases
+alias mysql.start="sudo /usr/local/mysql/support-files/mysql.server start"
+alias mysql.stop="sudo /usr/local/mysql/support-files/mysql.server stop"
+alias mysql.restart="sudo /usr/local/mysql/support-files/mysql.server restart"
+alias mysql.status="sudo /usr/local/mysql/support-files/mysql.server status"
+alias mysql="/usr/local/mysql/bin/mysql"
+alias mysqldump="/usr/local/mysql/bin/mysqldump"
+
+##########################################################################
+## git aliases
+alias gst="git status";
+alias gadd="git add .";
+alias gpush='git push -u origin master';
+alias gic='git commit -m "Initial commit 🚀"';
+alias glog='git log --graph --pretty=oneline --abbrev-commit';
+
+##########################################################################
+# Custom functions
+function gc { git commit -m "$@"; }
+function gcb { git checkout -b "$@"; }
+
+
+function hll {
+  node ./hammer.js -i ./test-users/test$1-$2-123.re -p 123 login -c $3;
+}
+
+function hel {
+  node ./hammer.js -i ./test-users/test$1-$2-123.re -p 123 exec $3;
+}
+
+
+export ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=8"
