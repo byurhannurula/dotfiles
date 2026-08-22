@@ -1,0 +1,193 @@
+# =============================================================================
+# macOS Apps Configuration
+# =============================================================================
+# Comment/uncomment lines to control what gets installed
+# Lines starting with # are ignored
+# Format: category:package_name:description
+# =============================================================================
+
+# =============================================================================
+# CLI Tools (Homebrew Formulae)
+# =============================================================================
+
+cli:git:Version control system
+cli:curl:Command line tool for transferring data
+cli:wget:Internet file retriever
+cli:tree:Display directories as trees
+cli:htop:Improved top command
+cli:jq:JSON processor
+cli:yq:YAML processor
+cli:fzf:Fuzzy finder
+cli:ripgrep:Fast text search (rg)
+cli:fd:Fast find alternative
+cli:bat:Better cat with syntax highlighting
+cli:exa:Modern ls replacement
+cli:zoxide:Smart cd command
+cli:tldr:Simplified man pages
+cli:gh:GitHub CLI
+cli:glab:GitLab CLI
+cli:mas:Mac App Store CLI
+cli:mackup:Backup application settings
+
+# Networking Tools
+cli:nmap:Network discovery and security auditing
+cli:netcat:Network utility
+cli:telnet:Telnet client
+cli:whois:Domain lookup utility
+cli:dig:DNS lookup utility
+# cli:nslookup:DNS lookup (usually included with dig)
+cli:mtr:Network diagnostic tool
+cli:iperf3:Network bandwidth measurement
+cli:wireshark:Network protocol analyzer
+# cli:tcpdump:Network packet analyzer (usually pre-installed)
+cli:speedtest-cli:Command line speedtest
+
+# Development Tools
+cli:node:Node.js JavaScript runtime
+cli:python@3.11:Python 3.11
+# cli:python@3.9:Python 3.9 (uncomment if needed)
+cli:ruby:Ruby programming language
+cli:go:Go programming language
+cli:rust:Rust programming language
+cli:docker:Container platform
+cli:docker-compose:Docker orchestration
+cli:yarn:JavaScript package manager
+cli:pnpm:Fast JavaScript package manager
+
+# Database Tools
+cli:mysql:MySQL database
+cli:redis:In-memory data store
+cli:postgresql:PostgreSQL database
+# cli:mongodb/brew/mongodb-community:MongoDB database (uncomment if needed)
+
+# Additional Development Tools (based on your current setup)
+cli:cocoapods:iOS dependency manager
+cli:gradle:Build automation tool
+cli:ffmpeg:Multimedia framework
+cli:graphicsmagick:Image processing
+cli:tesseract:OCR engine
+cli:minicom:Serial communication
+cli:smartmontools:Drive monitoring
+cli:cloudflared:Cloudflare tunnel
+
+# System Tools
+cli:nginx:Web server
+# cli:apache:Apache web server (alternative to nginx)
+
+# =============================================================================
+# GUI Applications (Homebrew Casks)
+# =============================================================================
+
+# Development
+cask:visual-studio-code:Code editor
+cask:cursor:AI-powered code editor
+cask:iterm2:Terminal emulator
+cask:docker:Docker Desktop
+cask:postman:API development environment
+cask:tableplus:Database management tool
+# cask:sequel-pro:MySQL management (alternative to TablePlus)
+
+# Browsers
+cask:google-chrome:Google Chrome browser
+cask:firefox:Mozilla Firefox browser
+cask:arc:Arc browser
+# cask:brave-browser:Privacy-focused browser
+# cask:safari-technology-preview:Safari preview
+
+# Communication
+cask:slack:Team communication
+cask:discord:Gaming/community chat
+cask:zoom:Video conferencing
+# cask:microsoft-teams:Microsoft Teams
+# cask:telegram:Telegram messenger
+
+# Productivity
+cask:notion:All-in-one workspace
+cask:obsidian:Knowledge management
+cask:raycast:Spotlight replacement
+cask:rectangle:Window management
+# cask:magnet:Window management (alternative to Rectangle)
+# cask:alfred:Productivity app (alternative to Raycast)
+
+# Design & Media
+cask:figma:Design tool
+# cask:sketch:Design tool (alternative to Figma)
+cask:vlc:Media player
+cask:spotify:Music streaming
+# cask:adobe-creative-cloud:Adobe Creative Suite
+
+# Utilities
+# cask:cleanmymac:System cleaner
+cask:the-unarchiver:Archive utility
+cask:appcleaner:App uninstaller
+cask:stats:System monitor
+# cask:bartender-4:Menu bar organizer
+# cask:finder-path:Finder path bar
+cask:imageoptim:Image optimizer
+# cask:keka:Archive utility
+# cask:coconutbattery:Battery health monitor
+
+# Additional Apps (based on your current setup)
+cask:betterdisplay:Display management
+cask:flameshot:Screenshot tool
+cask:monitorcontrol:External monitor brightness
+cask:ngrok:Secure tunnels
+# cask:android-studio:Android development
+# cask:arduino-ide:Arduino development
+# cask:bambu-studio:3D printing
+# cask:bitwarden:Password manager
+# cask:mongodb-compass:MongoDB GUI
+# cask:orbstack:Docker alternative
+# cask:raspberry-pi-imager:Raspberry Pi imaging
+# cask:tiles:Window management
+# cask:zen-browser:Privacy browser
+
+# Security
+# cask:bitwarden:Password manager
+# cask:1password:Password manager (alternative)
+# cask:yubikey-manager:YubiKey management
+
+# Development (Additional)
+# cask:android-studio:Android development
+# cask:xcode:iOS development (from App Store)
+# cask:sourcetree:Git GUI client
+# cask:github-desktop:GitHub desktop client
+
+# Virtualization
+# cask:vmware-fusion:Virtual machines
+# cask:parallels:Virtual machines (alternative)
+# cask:orbstack:Docker alternative
+
+# =============================================================================
+# Mac App Store Apps (using mas)
+# =============================================================================
+
+# mas:409183694:Keynote
+# mas:409201541:Pages
+# mas:409203825:Numbers
+# mas:1295203466:Microsoft Remote Desktop
+# mas:497799835:Xcode
+
+# =============================================================================
+# VS Code Extensions
+# =============================================================================
+
+vscode:ms-python.python:Python support
+vscode:ms-vscode.vscode-typescript-next:TypeScript support
+vscode:bradlc.vscode-tailwindcss:Tailwind CSS support
+vscode:esbenp.prettier-vscode:Code formatter
+vscode:ms-vscode.vscode-eslint:ESLint support
+vscode:formulahendry.auto-rename-tag:Auto rename HTML tags
+vscode:christian-kohler.path-intellisense:Path autocompletion
+vscode:ms-vsliveshare.vsliveshare:Live Share collaboration
+vscode:github.copilot:GitHub Copilot AI
+vscode:github.copilot-chat:GitHub Copilot Chat
+vscode:ms-vscode-remote.remote-ssh:Remote SSH development
+vscode:ms-vscode.remote-repositories:Remote repositories
+# vscode:gitpod.gitpod-desktop:Gitpod integration
+vscode:ms-vscode.hexeditor:Hex editor
+vscode:redhat.vscode-yaml:YAML support
+vscode:ms-kubernetes-tools.vscode-kubernetes-tools:Kubernetes tools
+vscode:ms-vscode-remote.remote-containers:Dev containers
+# vscode:rust-lang.rust-analyzer:Rust support
+# vscode:golang.go:Go support

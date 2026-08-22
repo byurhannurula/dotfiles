@@ -1,0 +1,102 @@
+# =============================================================================
+# gitleaks — scan for committed secrets
+#
+#   gitleaks detect  --source . --redact    # scan full git history
+#   gitleaks protect --source . --staged    # scan what's about to commit
+#
+# Installed via the devshell and machines/bbn/packages.nix.
+# Wired as a pre-commit hook — see SETUP.md.
+# =============================================================================
+
+title = "dotfiles"
+
+[extend]
+useDefault = true   # ~150 built-in rules: AWS, GitHub, Stripe, Slack, ...
+
+# -----------------------------------------------------------------------------
+# Extra rules for tools this machine actually has
+# -----------------------------------------------------------------------------
+
+[[rules]]
+id = "age-secret-key"
+description = "age private key"
+regex = '''AGE-SECRET-KEY-1[0-9A-Z]{58}'''
+tags = ["key", "age"]
+
+[[rules]]
+id = "ssh-private-key"
+description = "SSH private key block"
+regex = '''-----BEGIN (RSA|OPENSSH|DSA|EC|PGP) PRIVATE KEY( BLOCK)?-----'''
+tags = ["key", "ssh"]
+
+[[rules]]
+id = "anthropic-key"
+description = "Anthropic API key"
+regex = '''sk-ant-[a-zA-Z0-9_\-]{20,}'''
+tags = ["key", "anthropic"]
+
+[[rules]]
+id = "npm-token"
+description = "npm access token"
+regex = '''npm_[a-zA-Z0-9]{36}'''
+tags = ["token", "npm"]
+
+[[rules]]
+id = "cloudflare-token"
+description = "Cloudflare API token"
+regex = '''(?i)cloudflare[_\-\s]*(api)?[_\-\s]*token['"\s:=]+[a-zA-Z0-9_\-]{37,}'''
+tags = ["token", "cloudflare"]
+
+[[rules]]
+id = "tailscale-authkey"
+description = "Tailscale auth key"
+regex = '''tskey-(auth|client)-[a-zA-Z0-9\-]{10,}'''
+tags = ["key", "tailscale"]
+
+# -----------------------------------------------------------------------------
+# Allowlist — things that LOOK like secrets but are not
+# -----------------------------------------------------------------------------
+[allowlist]
+description = "known-safe paths and values"
+
+paths = [
+  # sops-encrypted: ciphertext trips entropy rules by design
+  '''secrets/secrets\.yaml$''',
+
+  # Layout documentation only. Shows an empty "BEGIN OPENSSH PRIVATE KEY"
+  # header and xxxx placeholders; must never hold real key material.
+  '''secrets/README\.md$''',
+
+  # PUBLIC keys — safe by definition
+  '''.*\.pub$''',
+
+  # age RECIPIENT (public) keys, not identities
+  '''\.sops\.yaml$''',
+
+  # the old bash setup, kept for reference only
+  '''^legacy/''',
+
+  # this file's own regexes would otherwise match themselves
+  '''\.gitleaks\.toml$''',
+
+  # lockfiles: hashes, not secrets
+  '''flake\.lock$''',
+  '''.*\.lock$''',
+]
+
+regexes = [
+  # sops metadata
+  '''ENC\[AES256_GCM.*\]''',
+  '''age1[a-z0-9]{58}''',        # age PUBLIC key (recipient)
+  '''sops:''',
+
+  # nix store hashes and sha256 pins
+  '''sha256-[A-Za-z0-9+/=]{44}''',
+  '''/nix/store/[a-z0-9]{32}-''',
+
+  # obvious placeholders
+  '''PLACEHOLDER''',
+  '''REPLACE_ME''',
+  '''<REDACTED>''',
+  '''xxxxxxxx''',
+]

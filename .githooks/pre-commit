@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# Blocks commits containing secrets. Install with:  make hooks
+set -uo pipefail
+
+fail() { printf '\033[0;31m✗ %s\033[0m\n' "$1" >&2; }
+ok()   { printf '\033[0;32m✓ %s\033[0m\n' "$1"; }
+
+# --- 1. gitleaks on staged content ------------------------------------------
+if command -v gitleaks &>/dev/null; then
+  if ! gitleaks protect --staged --redact --config .gitleaks.toml -v 2>&1 | tail -20; then
+    fail "gitleaks found secrets in staged changes — commit blocked"
+    echo "  override (only if you're certain):  git commit --no-verify" >&2
+    exit 1
+  fi
+  ok "gitleaks clean"
+else
+  fail "gitleaks not installed — run 'nix develop' or 'make hooks' after a rebuild"
+fi
+
+# --- 2. hard block on key material by filename ------------------------------
+BAD=$(git diff --cached --name-only --diff-filter=A \
+      | grep -E '(^|/)(id_[a-z0-9]+|keys\.txt|.*\.agekey|.*\.pem|.*\.p12)$' \
+      | grep -v '\.pub$' || true)
+if [ -n "$BAD" ]; then
+  fail "key material staged:"
+  echo "$BAD" | sed 's/^/    /' >&2
+  exit 1
+fi
+ok "no key files staged"
+
+# --- 3. secrets.yaml must be encrypted --------------------------------------
+if git diff --cached --name-only | grep -q '^secrets/secrets.yaml$'; then
+  if ! git show :secrets/secrets.yaml | grep -q 'ENC\[AES256_GCM'; then
+    fail "secrets/secrets.yaml is NOT encrypted — did you commit a decrypted copy?"
+    exit 1
+  fi
+  ok "secrets.yaml is encrypted"
+fi
