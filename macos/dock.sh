@@ -13,7 +13,7 @@
 # add is a separate cfprefsd round-trip and they get dropped under load.
 
 set -uo pipefail
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/.." || exit 1
 
 say()  { printf '\033[0;34m→\033[0m %s\n' "$1"; }
 ok()   { printf '\033[0;32m✓\033[0m %s\n' "$1"; }
