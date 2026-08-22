@@ -51,9 +51,13 @@ traceroute
 nmap
 net-tools
 
-# ---- desktop ----------------------------------------------------------------
+# ---- desktop and input --------------------------------------------------------
+# wmctrl + xdotool + libinput-tools are what libinput-gestures drives.
+# See linux/input/README.md.
 xclip
 xdotool
+wmctrl
+libinput-tools
 
 # ---- system health ----------------------------------------------------------
 smartmontools
