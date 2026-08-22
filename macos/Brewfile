@@ -184,7 +184,6 @@ cask "the-unarchiver"
 cask "vlc"
 cask "calibre"
 cask "transmission"
-cask "iptvnator"
 
 # hardware, 3d printing, imaging
 cask "bambu-studio"
