@@ -1,39 +1,137 @@
-# Custom Aliases
-alias pn=pnpm
+# =============================================================================
+# aliases.zsh — shared by macOS and Linux.
+#
+# Install to ~/.oh-my-zsh/custom/, which oh-my-zsh auto-sources.
+# Platform-specific aliases live in aliases.macos.zsh / aliases.linux.zsh.
+#
+# Modern replacements are GUARDED: each is only aliased if the tool is
+# actually installed. An unguarded `alias ls=eza` breaks ls on any machine
+# that does not have eza yet, which is most of them on day one.
+# =============================================================================
+
+# ---- basics -----------------------------------------------------------------
 alias c="clear"
-alias config="code ~/.zshrc"
-alias pig="echo 'Pinging Google' && ping www.google.com"
-
-alias gensecret="openssl rand -base64 32"
-alias gensecret-hex="openssl rand -hex 32"
-
-alias cc="claude"
-alias ccs="code ~/.claude/settings.json"
-alias ccmd="code ~/.claude/CLAUDE.md"
-
-# --- everyday replacements (installed by module 03) -----------------------
-alias ls='eza --icons --group-directories-first'
-alias ll='ls -l'
-alias la='ls -a'
-alias l='ls -la'
-alias cat='bat --paging=never'        # bat is the modern cat
-alias batp='bat --paging=always'      # ...when you actually want the pager
-alias diff='delta'                    # git-delta is the pager anyway
 alias ..='cd ..'
 alias ...='cd ../..'
+alias ....='cd ../../..'
+alias dev="cd ~/dev"
+alias pn=pnpm
+alias omz="cd ~/.oh-my-zsh"
+alias config='${EDITOR:-vim} ~/.zshrc'
+alias reload="exec zsh"
 
-##########################################################################
-## git aliases
+# ---- safety -----------------------------------------------------------------
+# -i prompts before clobbering. Muscle memory is worth less than a lost file.
+alias cp="cp -i"
+alias mv="mv -i"
+alias mkdir="mkdir -pv"
+alias ping="ping -c 5"
+
+# ---- modern replacements ----------------------------------------------------
+# Same set on every machine. Each guarded on the binary being present.
+if (( $+commands[eza] )); then
+  alias ls='eza --icons --group-directories-first'
+  alias ll='eza --icons --group-directories-first -l'
+  alias la='eza --icons --group-directories-first -a'
+  alias l='eza --icons --group-directories-first -la'
+  alias tree='eza --tree --icons'
+else
+  alias ll='ls -l'
+  alias la='ls -a'
+  alias l='ls -la'
+fi
+
+if (( $+commands[bat] )); then
+  alias cat='bat --paging=never'
+  alias batp='bat --paging=always'    # when you do want the pager
+elif (( $+commands[batcat] )); then   # Debian/Ubuntu renames the binary
+  alias cat='batcat --paging=never'
+  alias batp='batcat --paging=always'
+fi
+
+(( $+commands[delta] )) && alias diff='delta'
+(( $+commands[duf]   )) && alias df='duf'
+(( $+commands[dust]  )) && alias du='dust'
+(( $+commands[procs] )) && alias ps='procs'
+(( $+commands[btop]  )) && alias top='btop'
+(( $+commands[fd]    )) && alias find='fd'
+(( $+commands[fdfind])) && alias fd='fdfind'
+(( $+commands[rg]    )) && alias grep='rg'
+(( $+commands[tldr]  )) && alias help='tldr'
+
+# ---- git --------------------------------------------------------------------
 alias gst="git status"
 alias gadd="git add ."
-alias gpush='git push -u origin HEAD' # works whatever the branch is named
-alias gic='git commit -m "Initial commit 🚀"'
+alias gpush='git push -u origin HEAD'      # works whatever the branch is named
 alias gl='git log --oneline --decorate --graph'
 alias glog='git log --graph --pretty=oneline --abbrev-commit'
 alias gco='git checkout'
 alias gb='git branch'
 alias gd='git diff'
+alias gic='git commit -m "Initial commit"'
 
-# Custom functions
-function gc { git commit -m "$@"; }
-function gcb { git checkout -b "$@"; }
+alias g="git"
+alias gcm="git commit -m"
+alias gp="git push"
+alias gpl="git pull"
+
+gc()  { git commit -m "$@"; }
+gcb() { git checkout -b "$@"; }
+
+# ---- claude code ------------------------------------------------------------
+alias cc="claude"
+alias ccs='${EDITOR:-vim} ~/.claude/settings.json'
+alias ccmd='${EDITOR:-vim} ~/.claude/CLAUDE.md'
+
+# ---- package managers -------------------------------------------------------
+alias ni="npm install"
+alias nr="npm run"
+alias nt="npm test"
+alias nb="npm run build"
+alias pi="pnpm install"
+alias pa="pnpm add"
+alias prun="pnpm run"          # not `pr` — that shadows nothing useful but reads badly
+alias pt="pnpm test"
+alias pb="pnpm build"
+
+# ---- docker -----------------------------------------------------------------
+alias d="docker"
+alias dc="docker compose"      # v2 subcommand, not the old docker-compose binary
+alias dcu="docker compose up"
+alias dcd="docker compose down"
+alias dps="docker ps"
+alias di="docker images"
+
+# ---- functions --------------------------------------------------------------
+# Make a directory and enter it.
+mkcd() { mkdir -p "$1" && cd "$1"; }
+
+# Serve the current directory over HTTP.  serve [port]
+serve() {
+  local port=${1:-8000}
+  if command -v npx >/dev/null 2>&1; then
+    npx --yes http-server -p "$port"
+  else
+    python3 -m http.server "$port"
+  fi
+}
+
+# Kill processes by name.  killp node
+killp() {
+  local pids
+  pids=$(pgrep -f "$1")
+  if [ -z "$pids" ]; then
+    print "no process matching: $1"
+    return 1
+  fi
+  print "killing: $(echo $pids | tr '\n' ' ')"
+  echo "$pids" | xargs kill -9
+}
+
+weather() { curl -s "wttr.in/${1:-}?format=3"; }
+
+# ---- utilities --------------------------------------------------------------
+alias gensecret="openssl rand -base64 32"
+alias gensecret-hex="openssl rand -hex 32"
+alias deleteDSFiles="find . -name '.DS_Store' -type f -delete"
+alias pig="echo 'Pinging Google' && ping www.google.com"

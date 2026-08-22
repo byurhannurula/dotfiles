@@ -1,13 +1,17 @@
-eval "$(/opt/homebrew/bin/brew shellenv)"
+# =============================================================================
+# .zprofile — login shells only. Runs before .zshrc.
+#
+# Homebrew must be set up here: it puts /opt/homebrew/bin and sbin on PATH,
+# which .zshrc then relies on. Nothing tool-specific belongs in this file.
+# =============================================================================
 
-# Setting PATH for Python 2.7
-# The original version is saved in .zprofile.pysave
-PATH="/Library/Frameworks/Python.framework/Versions/2.7/bin:${PATH}"
-export PATH
+# Adds /opt/homebrew/bin and /opt/homebrew/sbin to PATH, plus MANPATH/INFOPATH.
+[ -x /opt/homebrew/bin/brew ] && eval "$(/opt/homebrew/bin/brew shellenv)"
 
-# Added by OrbStack: command-line tools and integration
-# This won't be added again if you remove it.
-source ~/.orbstack/shell/init.zsh 2>/dev/null || :
+# Rust, if installed.
+[ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
 
-# Hermes Agent — ensure ~/.local/bin is on PATH
-export PATH="$HOME/.local/bin:$PATH"
+# OrbStack (Docker replacement) CLI integration.
+[ -f "$HOME/.orbstack/shell/init.zsh" ] && . "$HOME/.orbstack/shell/init.zsh" 2>/dev/null
+
+true
