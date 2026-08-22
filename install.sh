@@ -266,9 +266,11 @@ if ask "7/9  Install app config (ghostty, vscode, zed, btop, obsidian)?"; then
 
     # Natural scrolling has to be re-applied at every login: XFCE's own mouse
     # toggle reverts to libinput's per-device default otherwise.
-    if [ -f linux/mac-trackpad-scroll.sh ]; then
+    put linux/input/libinput-gestures.conf "$HOME/.config/libinput-gestures.conf"
+
+    if [ -f linux/input/mac-trackpad-scroll.sh ]; then
       mkdir -p "$HOME/.local/bin" "$HOME/.config/autostart"
-      cp linux/mac-trackpad-scroll.sh "$HOME/.local/bin/mac-trackpad-scroll.sh"
+      cp linux/input/mac-trackpad-scroll.sh "$HOME/.local/bin/mac-trackpad-scroll.sh"
       chmod +x "$HOME/.local/bin/mac-trackpad-scroll.sh"
       cat > "$HOME/.config/autostart/mac-trackpad-scroll.desktop" <<DESKTOP
 [Desktop Entry]

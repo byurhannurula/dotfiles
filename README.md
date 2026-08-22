@@ -21,8 +21,8 @@ macos/
 linux/
   .zshrc                PATH and clipboard shims; sources zshrc.common
   aliases.linux.zsh     apt, systemd, ss
-  packages.txt          40 apt packages
-  mac-trackpad-scroll.sh  natural scrolling, re-applied at login
+  packages.txt          42 apt packages
+  input/                gestures, Mac-style keys, natural scrolling
 claude/                 CLAUDE.md, settings.json, statusline
 docs/                   packages.md, linux-setup.md
 _legacy/                the previous repo and every earlier .zshrc
@@ -140,9 +140,24 @@ is stored in this repo.
 | Desktop | xclip, xdotool |
 
 Linux runs zsh and oh-my-zsh, exactly as the Mac does — there is no bash config
-here. `mac-trackpad-scroll.sh` is installed to `~/.local/bin` with an autostart
-entry, because XFCE reverts natural scrolling to libinput's default on every
-login.
+here.
+
+`linux/input/` covers what BetterTouchTool would do on a Mac, split three ways:
+
+| Need | Tool |
+|---|---|
+| Trackpad gestures | `libinput-gestures` — 3-finger workspace swipe, 4-finger overview |
+| Cmd+C / Cmd+V everywhere | [Toshy](https://github.com/RedBearAK/toshy) — app-aware, so Ctrl+C still sends SIGINT in a terminal |
+| Natural scrolling | `mac-trackpad-scroll.sh`, autostarted |
+| Window snapping | XFCE, built in (Super + arrows) |
+
+`install.sh` places the gesture config and the scroll autostart. Toshy and the
+`hid_apple fnmode=2` F-key fix need their own installers and a reboot — see
+`linux/input/README.md`.
+
+Two things bite here: the `input` group only applies at the **next login**, so
+gestures are silently dead until then, and Toshy needs a logout rather than a
+new terminal.
 
 ## macOS settings
 
