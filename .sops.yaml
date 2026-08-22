@@ -1,0 +1,20 @@
+# =============================================================================
+# Which age keys can decrypt which files.
+#
+# Replace the placeholder below with your real public key from:
+#   grep 'public key' "$HOME/Library/Application Support/sops/age/keys.txt"
+#
+# The public key is NOT a secret -- it's safe to commit.
+# =============================================================================
+
+keys:
+  - &byrhn_personal age1PLACEHOLDER_REPLACE_ME_WITH_YOUR_PUBLIC_KEY
+
+creation_rules:
+  - path_regex: secrets/secrets\.yaml$
+    key_groups:
+      - age:
+          - *byrhn_personal
+
+  # Add a second machine later by appending its key here, then:
+  #   sops updatekeys secrets/secrets.yaml

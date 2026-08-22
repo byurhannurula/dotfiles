@@ -1,0 +1,25 @@
+# Monthly flake.lock bump, opened as a PR so you can see the diff.
+#
+# Monthly, NOT nightly: every update pulls a fresh nixpkgs revision, which
+# means a second copy of the dependency graph in /nix until GC runs. On a
+# 512GB machine that matters.
+name: update-flake-lock
+
+on:
+  schedule:
+    - cron: '0 4 1 * *'   # 04:00 on the 1st
+  workflow_dispatch:       # or run it by hand
+
+jobs:
+  lockfile:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/update-flake-lock@main
+        with:
+          pr-title: "chore: update flake.lock"
+          pr-labels: dependencies

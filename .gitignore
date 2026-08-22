@@ -1,1 +1,82 @@
+# =============================================================================
+# This repo is PUBLIC-SAFE by design. Everything sensitive is either encrypted
+# (secrets/secrets.yaml, via sops) or blocked below.
+#
+# Belt and braces: gitleaks runs as a pre-commit hook (make hooks) and
+# scripts/sync.sh refuses to commit if key material is staged.
+# =============================================================================
+
+# ---- KEY MATERIAL — never, under any circumstance ---------------------------
+# The age private key. Lose it and the secrets are gone; leak it and they're
+# public. It lives in ~/Library/Application Support/sops/age/, not here.
+keys.txt
+*.agekey
+age.key
+
+# SSH private keys. Note the negations — .pub files ARE safe to commit.
+id_rsa
+id_dsa
+id_ecdsa
+id_ed25519
+id_*
+!id_*.pub
+!*.pub
+
+# Certificates and generic key material
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.ppk
+!*.pub.pem
+
+# ---- Decrypted secrets ------------------------------------------------------
+# secrets/secrets.yaml IS committed (it's encrypted). Anything decrypted isn't.
+secrets/*.dec.yaml
+secrets/*.dec.*
+secrets/decrypted*
+secrets/plain*
+*.decrypted
+
+# ---- Credentials that tools scatter around ----------------------------------
+.env
+.env.*
+!.env.example
+.envrc.local
+.netrc
+.npmrc
+!.npmrc.example
+credentials
+credentials.json
+hosts.yml
+gh/hosts.yml
+.aws/
+.azure/
+.kube/config
+*service-account*.json
+
+# ---- Nix --------------------------------------------------------------------
+result
+result-*
+.direnv/
+
+# ---- Captures ---------------------------------------------------------------
+# The capture itself is committed (it's the restore data), but not the parts
+# that are huge or unreviewed.
+capture-*/review/
+capture-*/defaults-all.txt
+capture-*/Brewfile.lock.json
+capture-*/**/id_*
+!capture-*/**/id_*.pub
+
+# ---- macOS / editors --------------------------------------------------------
 .DS_Store
+._*
+.Spotlight-V100
+.Trashes
+*.swp
+*~
+.idea/
+*.hm-bak

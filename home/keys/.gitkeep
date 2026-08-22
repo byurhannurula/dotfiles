@@ -1,0 +1,2 @@
+Public keys only. Private key material must never land here — .gitignore
+blocks it and the pre-commit hook will reject it.
