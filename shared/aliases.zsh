@@ -17,8 +17,9 @@ alias ....='cd ../../..'
 alias dev="cd ~/dev"
 alias pn=pnpm
 alias omz="cd ~/.oh-my-zsh"
-alias config='${EDITOR:-vim} ~/.zshrc'
+alias config='$EDITOR ~/.zshrc'
 alias reload="exec zsh"
+alias myip='curl -s https://ifconfig.me && echo'   # same on both OSes
 
 # ---- safety -----------------------------------------------------------------
 # -i prompts before clobbering. Muscle memory is worth less than a lost file.
@@ -49,15 +50,8 @@ elif (( $+commands[batcat] )); then   # Debian/Ubuntu renames the binary
   alias batp='batcat --paging=always'
 fi
 
-(( $+commands[delta] )) && alias diff='delta'
-(( $+commands[duf]   )) && alias df='duf'
-(( $+commands[dust]  )) && alias du='dust'
-(( $+commands[procs] )) && alias ps='procs'
-(( $+commands[btop]  )) && alias top='btop'
-(( $+commands[fd]    )) && alias find='fd'
-(( $+commands[fdfind])) && alias fd='fdfind'
-(( $+commands[rg]    )) && alias grep='rg'
-(( $+commands[tldr]  )) && alias help='tldr'
+(( $+commands[btop] )) && alias top='btop'
+(( $+commands[rg]   )) && alias grep='rg'
 
 # ---- git --------------------------------------------------------------------
 alias gst="git status"
@@ -75,13 +69,10 @@ alias gcm="git commit -m"
 alias gp="git push"
 alias gpl="git pull"
 
-gc()  { git commit -m "$@"; }
-gcb() { git checkout -b "$@"; }
-
 # ---- claude code ------------------------------------------------------------
 alias cc="claude"
-alias ccs='${EDITOR:-vim} ~/.claude/settings.json'
-alias ccmd='${EDITOR:-vim} ~/.claude/CLAUDE.md'
+alias ccs='$EDITOR ~/.claude/settings.json'
+alias ccmd='$EDITOR ~/.claude/CLAUDE.md'
 
 # ---- package managers -------------------------------------------------------
 alias ni="npm install"
@@ -89,7 +80,8 @@ alias nr="npm run"
 alias nt="npm test"
 alias nb="npm run build"
 alias pi="pnpm install"
-alias pa="pnpm add"
+alias pad="pnpm add"
+alias ped="pnpm dev"
 alias prun="pnpm run"          # not `pr` — that shadows nothing useful but reads badly
 alias pt="pnpm test"
 alias pb="pnpm build"

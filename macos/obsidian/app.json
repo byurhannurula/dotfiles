@@ -1,0 +1,15 @@
+{
+  "showInlineTitle": true,
+  "attachmentFolderPath": "Resources/Attachments",
+  "newLinkFormat": "shortest",
+  "useMarkdownLinks": false,
+  "alwaysUpdateLinks": true,
+  "showUnsupportedFiles": true,
+  "readableLineLength": true,
+  "propertiesInDocument": "hidden",
+  "strictLineBreaks": false,
+  "showLineNumber": false,
+  "showIndentGuide": true,
+  "defaultNoteView": "source",
+  "defaultViewMode": "preview"
+}

@@ -26,6 +26,14 @@ esac
 
 YES=0
 HOSTNAME_NEW=""
+
+# Interactivity is DERIVED, not configured: no TTY on stdin means no prompt can
+# be answered, so every `read` would return empty and each question would
+# silently self-answer. CI is separately explicit, because some steps are safe
+# to run unattended but wrong to run on a real machine's login shell.
+INTERACTIVE=0
+[ -t 0 ] && INTERACTIVE=1
+IS_CI="${CI:-}"
 while [ $# -gt 0 ]; do
   case "$1" in
     -y|--yes)   YES=1; shift ;;
@@ -37,8 +45,12 @@ done
 
 BACKUP="$HOME/.dotfiles.backup/$(date +%Y%m%d_%H%M%S)"
 
+# Obsidian keeps its config inside the vault. Override if yours lives elsewhere.
+OBSIDIAN_VAULT="${OBSIDIAN_VAULT:-$HOME/Documents/obsidian-bbn}"
+
 ask() {
   [ "$YES" -eq 1 ] && return 0
+  [ "$INTERACTIVE" -eq 0 ] && return 1   # nothing to read from; decline
   printf '  %s [y/N] ' "$1"
   read -r a
   case "$a" in [yY]*) return 0 ;; *) return 1 ;; esac
@@ -63,8 +75,10 @@ put() {
 if [ "$OS" = macos ] && ! xcode-select -p >/dev/null 2>&1; then
   say "installing Xcode Command Line Tools"
   xcode-select --install 2>/dev/null || true
-  printf '  finish the GUI installer, then press enter: '
-  read -r _
+  if [ "$INTERACTIVE" -eq 1 ]; then
+    printf '  finish the GUI installer, then press enter: '
+    read -r _
+  fi
 fi
 
 say "installing $OS config from $(pwd)"
@@ -79,11 +93,12 @@ echo
 #   5 shell      .zshrc references the plugins from step 4
 #   6 app config the apps exist only after step 3
 #   7 extensions needs the `code` binary from step 3
-#   8 claude     last; independent of the rest
+#   4 dock       needs the apps from step 3 to exist
+#   9 agents     last; independent of the rest
 # =============================================================================
 
 # ---- macOS defaults ---------------------------------------------------------
-if [ "$OS" = macos ] && ask "1/8  Apply macOS defaults (finder, dock, pointer, screenshots)?"; then
+if [ "$OS" = macos ] && ask "1/9  Apply macOS defaults (finder, dock, pointer, text input)?"; then
   bash macos/defaults.sh
 fi
 
@@ -91,9 +106,9 @@ fi
 # Asked rather than assumed: one repo serves several machines and the hostname
 # is the thing that must differ. Renaming is behind its own y/N because a
 # stray keystroke at a bare prompt would otherwise rename the machine.
-if [ -z "$HOSTNAME_NEW" ] && [ "$YES" -eq 0 ]; then
+if [ -z "$HOSTNAME_NEW" ] && [ "$YES" -eq 0 ] && [ "$INTERACTIVE" -eq 1 ]; then
   current=$(hostname -s 2>/dev/null || hostname)
-  if ask "2/8  Change the hostname? (currently: $current)"; then
+  if ask "2/9  Change the hostname? (currently: $current)"; then
     printf '      new hostname: '
     read -r HOSTNAME_NEW
   fi
@@ -123,7 +138,7 @@ fi
 # This is what the old nix-darwin config did and the first bash draft did not:
 # actually install the software. The Brewfile is generated from a capture, so
 # it reflects what the machine really had, not a guess.
-if [ "$OS" = macos ] && ask "3/8  Install all packages and apps from macos/Brewfile (slow)?"; then
+if [ "$OS" = macos ] && ask "3/9  Install all packages and apps from macos/Brewfile (slow)?"; then
   # Nothing else can bootstrap Homebrew, and everything below depends on it.
   if ! command -v brew >/dev/null 2>&1; then
     say "installing Homebrew"
@@ -149,7 +164,7 @@ if [ "$OS" = macos ] && ask "3/8  Install all packages and apps from macos/Brewf
   fi
 fi
 
-if [ "$OS" = linux ] && ask "3/8  Install packages from linux/packages.txt?"; then
+if [ "$OS" = linux ] && ask "3/9  Install packages from linux/packages.txt?"; then
   if [ -f linux/packages.txt ]; then
     # strip comments and blank lines, install in one transaction
     pkgs=$(grep -vE '^\s*(#|$)' linux/packages.txt | tr '\n' ' ')
@@ -160,10 +175,18 @@ if [ "$OS" = linux ] && ask "3/8  Install packages from linux/packages.txt?"; th
   fi
 fi
 
+# ---- dock -------------------------------------------------------------------
+# Deliberately after the Brewfile step, unlike defaults.sh which runs first:
+# dock.sh skips apps that are not installed, so running it early would leave
+# an empty Dock.
+if [ "$OS" = macos ] && [ -z "$IS_CI" ] && ask "4/9  Set Dock contents from macos/dock.txt?"; then
+  bash macos/dock.sh
+fi
+
 # ---- oh-my-zsh plugins ------------------------------------------------------
 # Four plugins in plugins= are not bundled. Without them the shell still
 # works, but autosuggestions and syntax highlighting silently do nothing.
-if ask "4/8  Install oh-my-zsh and its plugins?"; then
+if ask "5/9  Install oh-my-zsh and its plugins?"; then
   ZC="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}"
 
   # On a fresh machine oh-my-zsh is not there yet. Install it unattended:
@@ -177,8 +200,7 @@ if ask "4/8  Install oh-my-zsh and its plugins?"; then
   fi
 
   if [ -d "$HOME/.oh-my-zsh" ]; then
-    for repo in zsh-autosuggestions zsh-syntax-highlighting zsh-completions \
-                zsh-history-substring-search; do
+    for repo in zsh-autosuggestions zsh-syntax-highlighting zsh-completions; do
       if [ -d "$ZC/plugins/$repo" ]; then
         printf '    %s (already there)\n' "$repo"
       else
@@ -188,7 +210,7 @@ if ask "4/8  Install oh-my-zsh and its plugins?"; then
     done
     # zsh must be the login shell or none of this config is ever read.
     if [ "$(basename "${SHELL:-}")" != zsh ] && command -v zsh >/dev/null 2>&1; then
-      if ask "    make zsh the login shell?"; then
+      if [ -z "$IS_CI" ] && ask "    make zsh the login shell?"; then
         Z=$(command -v zsh)
         grep -qx "$Z" /etc/shells 2>/dev/null || echo "$Z" | sudo tee -a /etc/shells >/dev/null
         chsh -s "$Z" && ok "login shell: $Z (next login)"
@@ -201,7 +223,7 @@ if ask "4/8  Install oh-my-zsh and its plugins?"; then
 fi
 
 # ---- shell ------------------------------------------------------------------
-if ask "5/8  Install shell config (.zshrc, aliases, git)?"; then
+if ask "6/9  Install shell config (.zshrc, aliases, git)?"; then
   put shared/zshrc.common "$HOME/.zshrc.common"
   put "$OS/.zshrc"        "$HOME/.zshrc"
   put shared/.zprofile    "$HOME/.zprofile"
@@ -222,7 +244,7 @@ if ask "5/8  Install shell config (.zshrc, aliases, git)?"; then
 fi
 
 # ---- apps -------------------------------------------------------------------
-if ask "6/8  Install app config (ghostty, vscode, zed, btop)?"; then
+if ask "7/9  Install app config (ghostty, vscode, zed, btop, obsidian)?"; then
   if [ "$OS" = macos ]; then
     put macos/ghostty/config "$HOME/Library/Application Support/com.mitchellh.ghostty/config"
     V="$HOME/Library/Application Support/Code/User"
@@ -234,12 +256,25 @@ if ask "6/8  Install app config (ghostty, vscode, zed, btop)?"; then
   put "$OS/vscode/keybindings.json" "$V/keybindings.json"
   put "$OS/zed/settings.json"       "$HOME/.config/zed/settings.json"
   put "$OS/btop/btop.conf"          "$HOME/.config/btop/btop.conf"
+
+  # Obsidian settings live inside the vault, not in ~/Library, so they only
+  # apply once the vault exists. Plugin code is not tracked — Obsidian
+  # re-downloads it from community-plugins.json on first launch.
+  if [ "$OS" = macos ] && [ -d "$OBSIDIAN_VAULT" ]; then
+    for f in app.json appearance.json core-plugins.json community-plugins.json \
+             hotkeys.json graph.json daily-notes.json templates.json; do
+      put "macos/obsidian/$f" "$OBSIDIAN_VAULT/.obsidian/$f"
+    done
+    ok "obsidian (open the vault to let plugins re-download)"
+  elif [ "$OS" = macos ]; then
+    warn "obsidian vault not at $OBSIDIAN_VAULT — settings skipped"
+  fi
   ok "apps"
 fi
 
 # ---- vscode extensions ------------------------------------------------------
 # Captured with `code --list-extensions`, so this is what was really installed.
-if ask "7/8  Install VS Code extensions ($(wc -l < "$OS/vscode/extensions.txt" 2>/dev/null | tr -d ' ') of them)?"; then
+if ask "8/9  Install VS Code extensions ($(wc -l < "$OS/vscode/extensions.txt" 2>/dev/null | tr -d ' ') of them)?"; then
   if command -v code >/dev/null 2>&1; then
     while read -r ext; do
       case "$ext" in ''|\#*) continue ;; esac
@@ -257,7 +292,7 @@ fi
 # Config plus a check that the agents are actually there. The CLIs come from
 # the Brewfile in step 3; this catches a machine where that was skipped, and
 # handles the ones brew does not carry.
-if ask "8/8  Set up AI coding agents (config + verify)?"; then
+if ask "9/9  Set up AI coding agents (config + verify)?"; then
 
   # --- config ---
   put claude/CLAUDE.md             "$HOME/.claude/CLAUDE.md"

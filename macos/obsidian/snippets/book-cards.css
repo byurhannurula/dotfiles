@@ -1,0 +1,95 @@
+/* Notion-style cover gallery for Dataview tables.
+   Activate per note with `cssclasses: [book-cards]` in frontmatter.
+   The first column must be the cover embed, the second the title link. */
+
+.book-cards table.dataview,
+.book-cards .dataview table,
+.book-cards .table-view-table {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 1.5rem 1.25rem;
+  border: none !important;
+  width: 100%;
+}
+
+.book-cards table.dataview thead,
+.book-cards .dataview table thead,
+.book-cards .table-view-table thead {
+  display: none !important;
+}
+
+.book-cards table.dataview tbody,
+.book-cards .dataview table tbody,
+.book-cards .table-view-table tbody {
+  display: contents !important;
+}
+
+.book-cards table.dataview tbody tr,
+.book-cards .dataview table tbody tr,
+.book-cards .table-view-table tbody tr {
+  display: flex !important;
+  flex-direction: column;
+  gap: 0.3rem;
+  border: none !important;
+  padding: 0 !important;
+}
+
+.book-cards table.dataview tbody td,
+.book-cards .dataview table tbody td,
+.book-cards .table-view-table tbody td {
+  border: none !important;
+  padding: 0 !important;
+  line-height: 1.35;
+}
+
+/* Cover cell: the image may be wrapped in a span or internal-embed div. */
+.book-cards tbody td:first-child img,
+.book-cards tbody td:first-child .internal-embed img {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  border-radius: 6px;
+  /* Covers come from many sources at different sizes; a soft edge hides the
+     mismatch better than a hard border. */
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+  display: block;
+  margin: 0;
+}
+
+/* An unresolved embed renders as a bare link; make that failure visible
+   rather than silently empty. */
+.book-cards tbody td:first-child .internal-embed:not(:has(img)) {
+  display: block;
+  aspect-ratio: 2 / 3;
+  border: 1px dashed var(--text-error);
+  border-radius: 6px;
+  font-size: 0.7em;
+  color: var(--text-error);
+  padding: 0.4rem;
+  overflow: hidden;
+}
+
+.book-cards tbody td:nth-child(2) {
+  font-weight: 600;
+  font-size: 0.88em;
+}
+
+.book-cards tbody td:nth-child(2) a {
+  text-decoration: none;
+}
+
+.book-cards tbody td:nth-child(n + 3) {
+  font-size: 0.78em;
+  color: var(--text-muted);
+}
+
+.book-cards tbody tr:hover td:first-child img {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.28);
+  transition: box-shadow 120ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .book-cards tbody tr:hover td:first-child img {
+    transition: none;
+  }
+}

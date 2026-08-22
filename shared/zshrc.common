@@ -11,6 +11,11 @@
 
 export TERM=xterm-256color
 
+# nano, not vi: git commit messages, crontab -e and the `config` alias all
+# honour this.
+export EDITOR=nano
+export VISUAL=nano
+
 # -U keeps these arrays de-duplicated for the whole session, so neither this
 # file nor the per-OS one can stack a duplicate entry. Must come first.
 typeset -U path PATH fpath FPATH
@@ -23,15 +28,12 @@ ZSH_THEME="robbyrussell"
 # ~/.oh-my-zsh/custom/plugins by the setup script.
 plugins=(
   git
-  docker
-  npm
   z                              # bundled: jump to frecent dirs
   extract                        # bundled: `x file.whatever` unpacks anything
   command-not-found
   zsh-completions
   zsh-autosuggestions
   zsh-syntax-highlighting        # must be last — it wraps the others
-  history-substring-search
 )
 
 export ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=8"
@@ -54,30 +56,41 @@ setopt HIST_IGNORE_SPACE      # leading space keeps a command out of history
 setopt HIST_VERIFY            # expand !! for review instead of running it
 setopt EXTENDED_HISTORY       # record timestamps
 
-# ---- navigation and correction ----------------------------------------------
-setopt AUTO_CD                # `dotfiles` instead of `cd dotfiles`
-setopt AUTO_PUSHD             # every cd pushes to the dir stack
-setopt PUSHD_IGNORE_DUPS
-setopt CORRECT                # offer a fix for a mistyped command
 setopt INTERACTIVE_COMMENTS   # allow # comments when typing interactively
-setopt NO_BEEP
 
-# ---- node -------------------------------------------------------------------
-# nvm is slow to load (~200ms). If startup drags, make this lazy first.
+# ---- node (nvm, lazy) --------------------------------------------------------
+# Sourcing nvm.sh eagerly costs ~200ms on every shell. Instead, define stubs
+# that load nvm on first use, then hand off to the real command. The shell
+# starts fast and nvm still works the first time you type it.
+#
+# .nvmrc is honoured: the chpwd hook below runs `nvm use` on entering a
+# directory that has one, which is the behaviour the eager version gave.
 export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-[ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion"
+
+_nvm_load() {
+  unset -f nvm node npm npx 2>/dev/null
+  [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+  [ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion"
+}
+if [ -s "$NVM_DIR/nvm.sh" ]; then
+  nvm()  { _nvm_load; nvm "$@"; }
+  node() { _nvm_load; node "$@"; }
+  npm()  { _nvm_load; npm "$@"; }
+  npx()  { _nvm_load; npx "$@"; }
+
+  # Auto-switch on cd into a directory with .nvmrc
+  _nvm_auto() {
+    if [ -f .nvmrc ]; then
+      _nvm_load 2>/dev/null
+      # --silent suppresses the success line but not the "Found .nvmrc" notice
+      nvm use --silent >/dev/null 2>&1
+    fi
+  }
+  autoload -Uz add-zsh-hook && add-zsh-hook chpwd _nvm_auto
+  _nvm_auto        # honour .nvmrc if the shell starts inside a project
+fi
 
 # ---- shell integrations -----------------------------------------------------
-# Each guarded: absent tool must not produce an error on every new shell.
-(( $+commands[zoxide] )) && eval "$(zoxide init zsh)"
-(( $+commands[direnv] )) && eval "$(direnv hook zsh)"
-(( $+commands[atuin]  )) && eval "$(atuin init zsh)"
-(( $+commands[fzf]    )) && source <(fzf --zsh) 2>/dev/null
-(( $+commands[mise]   )) && eval "$(mise activate zsh)"
+# Guarded so an absent tool does not error on every new shell.
+(( $+commands[fzf] )) && source <(fzf --zsh) 2>/dev/null
 
-# ---- history search on arrow keys -------------------------------------------
-# Type a prefix, then Up walks only through matching history. The single most
-# useful binding here; needs the history-substring-search plugin.
-bindkey '^[[A' history-substring-search-up
-bindkey '^[[B' history-substring-search-down

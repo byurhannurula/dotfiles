@@ -1,0 +1,76 @@
+/* Layout: content width and quieter property chrome.
+
+   Per-note overrides shipped by mnml (add to a note's cssclasses):
+     wide  - wider than the default measure
+     max   - fills the pane */
+
+body {
+  /* Content width. mnml is built on Minimal, which uses --line-width, not the
+     vanilla --file-line-width. --content-line-width is min() of the two below,
+     so both must allow the width or the smaller one wins. */
+  --line-width: 1000px;
+  --max-width: 96%;
+  --file-line-width: 1000px;
+}
+
+/* Properties are hidden in the document body via the propertiesInDocument
+   setting. When shown (Cmd+click the toggle), keep them quiet. */
+.metadata-container {
+  border: none;
+  padding-top: 0;
+  margin-bottom: 1.5rem;
+}
+
+.metadata-container .metadata-properties-heading {
+  display: none;
+}
+
+.metadata-container .metadata-property-key {
+  font-size: 0.8em;
+  color: var(--text-faint);
+  text-transform: lowercase;
+}
+
+.metadata-container .metadata-property-value {
+  font-size: 0.85em;
+  color: var(--text-muted);
+}
+
+/* Add-property button is editing chrome; hide until the block is hovered. */
+.metadata-container .metadata-add-button {
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.metadata-container:hover .metadata-add-button {
+  opacity: 0.6;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .metadata-container .metadata-add-button {
+    transition: none;
+  }
+}
+
+/* Pin Resources to the bottom of the file explorer.
+   Obsidian sorts alphabetically with no manual order, so "Resources" would
+   otherwise sit between Research and Templates. The tree is a flex column,
+   so `order` moves it without renaming the folder. */
+.nav-files-container > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.nav-folder-children > .nav-folder,
+.nav-files-container > div > .nav-folder,
+.nav-files-container > div > .nav-file {
+  order: 0;
+}
+
+.nav-files-container > div > .nav-folder:has(> .nav-folder-title[data-path="Resources"]) {
+  order: 100;
+  /* Reused material, not primary content: set it apart from the domain folders. */
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--background-modifier-border);
+}

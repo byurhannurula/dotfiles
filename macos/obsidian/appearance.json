@@ -1,0 +1,13 @@
+{
+  "cssTheme": "mnml",
+  "translucency": false,
+  "theme": "moonstone",
+  "showRibbon": false,
+  "showViewHeader": true,
+  "nativeMenus": false,
+  "enabledCssSnippets": [
+    "book-cards",
+    "layout",
+    "dashboard"
+  ]
+}
