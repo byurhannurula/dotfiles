@@ -1,9 +1,9 @@
 [user]
 	email = 24678841+byurhannurula@users.noreply.github.com
 	name = Byurhan Nurula
-	signingkey = /Users/byrhn/.ssh/id_ed25519.pub
+	signingkey = ~/.ssh/id_ed25519.pub
 [core]
-	excludesfile = /Users/byrhn/.gitignore-global
+	excludesfile = ~/.gitignore-global
 [init]
 	defaultBranch = main
 [pull]
@@ -21,4 +21,4 @@
 [tag]
 	gpgsign = true
 [gpg "ssh"]
-	allowedSignersFile = /Users/byrhn/.config/git/allowed_signers
+	allowedSignersFile = ~/.config/git/allowed_signers

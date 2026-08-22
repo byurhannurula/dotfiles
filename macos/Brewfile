@@ -1,0 +1,224 @@
+# =============================================================================
+# Brewfile — macOS packages.  Apply with:  brew bundle --file=macos/Brewfile
+#
+# Captured from bbn-mbp on 2026-08-22, plus the shell tooling the aliases in
+# shared/aliases.zsh expect (see docs/packages.md).
+#
+# Remove what you do not want before running. `brew bundle cleanup` will list
+# anything installed that is NOT in this file.
+# =============================================================================
+
+# ---- taps -------------------------------------------------------------------
+tap "adembc/tap"
+tap "byurhannurula/tap"
+tap "hashicorp/tap"
+tap "homebrew/services"
+tap "jsattler/tap"
+tap "metafab/tap"
+tap "ngrok/ngrok"
+tap "stripe/stripe-cli"
+tap "supersonic-app/supersonic"
+tap "terraform-linters/tap"
+
+# =============================================================================
+# SHELL TOOLING
+# The aliases in shared/aliases.zsh are guarded on these binaries: install one
+# and the modern replacement switches on, skip it and plain coreutils stays.
+# =============================================================================
+brew "eza"              # ls
+brew "bat"              # cat
+brew "fzf"              # ctrl-r history search, ctrl-t files
+brew "ripgrep"          # grep
+brew "jq"
+brew "gh"
+
+# Everything below is optional — see docs/packages.md for what each does.
+# Uncomment a line to adopt it; the matching alias appears automatically.
+# brew "git-delta"      # diff, and git's pager
+# brew "duf"            # df
+# brew "dust"           # du
+# brew "procs"          # ps
+# brew "fd"             # find
+# brew "tldr"           # man
+# brew "zoxide"         # z — jump to frecent dirs
+# brew "direnv"         # per-directory env
+# brew "atuin"          # history in sqlite, searchable
+# brew "mise"           # node/python/go versions — replaces nvm
+# brew "lazygit"
+# brew "yq"
+# brew "httpie"
+# brew "hyperfine"
+# brew "watchexec"
+# brew "gping"
+# brew "trash"          # undoable rm
+# brew "uv"             # fast python packaging
+
+# =============================================================================
+# AI CODING AGENTS
+# The reason half of this machine exists. CLI agents first — they are what the
+# terminal config, tmux and the shell aliases are actually for.
+# =============================================================================
+brew "opencode"              # open-source terminal agent
+cask "claude-code"           # Anthropic's terminal agent (the `claude` command)
+
+# Desktop apps
+cask "claude"                # Claude desktop
+cask "opencode-desktop"
+cask "superwhisper"          # local speech-to-text
+cask "ollama-app"            # local models
+
+# Not in brew — install by hand if you want them:
+#   herdr    curl -fsSL https://herdr.dev/install.sh | sh
+#            agent runtime that owns the terminals; sessions survive a reboot.
+#            Young software. tmux stays installed as the fallback.
+#   pi       npm i -g @earendil-works/pi-coding-agent
+
+# =============================================================================
+# CAPTURED — what was already on this machine
+# =============================================================================
+
+# ---- core cli ---------------------------------------------------------------
+brew "git"
+brew "tree"
+brew "wget"
+brew "parallel"
+brew "shellcheck"
+brew "gitleaks"         # the pre-commit secret scanner
+brew "xmlstarlet"
+brew "mas"              # App Store CLI
+
+# ---- languages and build ----------------------------------------------------
+brew "cmake"
+brew "python@3.11"
+brew "pnpm"
+brew "openssl@1.1"
+brew "argon2"
+
+# ---- mobile / flutter -------------------------------------------------------
+brew "cocoapods"
+brew "fvm"              # flutter version manager
+brew "gradle"
+
+# ---- containers and cloud ---------------------------------------------------
+brew "podman"
+brew "azure-cli"
+brew "cloudflared"
+brew "hashicorp/tap/terraform"
+
+# ---- media ------------------------------------------------------------------
+brew "ffmpeg"
+brew "graphicsmagick"
+brew "poppler"
+
+# ---- hardware / serial ------------------------------------------------------
+brew "hidapi"
+brew "minicom"
+brew "nut"
+brew "smartmontools"
+brew "telnet"
+
+# ---- misc -------------------------------------------------------------------
+brew "redis"
+brew "watchman"
+brew "mprocs"
+brew "mole"
+brew "adembc/tap/lazyssh"
+brew "metafab/tap/otel-gui"
+
+# =============================================================================
+# CASKS
+# =============================================================================
+cask "betterdisplay"
+cask "monitorcontrol"
+cask "stats"
+cask "drawio"
+cask "jotter"
+cask "iptvnator"
+cask "ngrok"
+cask "android-platform-tools"
+cask "silicon-labs-vcp-driver"
+cask "tflint"
+
+# Java. temurin@8 and @17 are versioned; plain temurin is current.
+cask "temurin"
+cask "temurin@17"
+cask "temurin@8"
+
+# ---- desktop apps ------------------------------------------------------------
+# On a fresh Mac these install normally. On a machine where one of them is
+# already present from a web download, brew refuses rather than clobbering it —
+# pass --adopt by hand for that single app if you want brew to manage it.
+
+# browsers
+cask "brave-browser"
+cask "google-chrome"
+cask "firefox"
+
+# editors and terminals
+cask "visual-studio-code"
+cask "zed"
+cask "ghostty"
+
+# dev
+cask "orbstack"              # provides docker + docker-compose here
+cask "tableplus"
+cask "mongodb-compass"
+cask "cyberduck"
+
+# comms
+cask "discord"
+cask "telegram"
+cask "viber"
+
+# productivity
+cask "raycast"
+cask "obsidian"
+cask "raindropio"
+cask "paseo"
+cask "tiles"
+cask "hiddenbar"
+cask "appcleaner"
+cask "the-unarchiver"
+
+# media
+cask "vlc"
+cask "calibre"
+cask "transmission"
+cask "iptvnator"
+
+# hardware, 3d printing, imaging
+cask "bambu-studio"
+cask "orcaslicer"
+cask "raspberry-pi-imager"
+cask "balenaetcher"
+
+# system and utilities
+cask "coconutbattery"
+cask "flux"
+cask "anydesk"
+cask "home-assistant"
+cask "yubico-authenticator"
+
+# =============================================================================
+# App Store
+#
+# `mas list` returns nothing on this machine because Spotlight indexing is
+# disabled, and mas reads that index. The four below were found by checking
+# for Contents/_MASReceipt instead. IDs are the public App Store ids —
+# verify with `mas search <name>` before relying on them on a fresh machine.
+#
+# Requires being signed in to the App Store, or every line is skipped silently.
+# =============================================================================
+# mas "Numbers", id: 409203825
+# mas "Pages",   id: 409201541
+# mas "Xcode",   id: 497799835
+# mas "Home Assistant", id: 1099568401
+
+# Not installable by brew or mas — keep installing these by hand:
+#   Tailscale       installed via the App Store into a .localized folder,
+#                   so `--adopt` cannot match it; the cask is "tailscale-app"
+#   Whisper Lite    your own app (com.byrhn.whisperlite)
+#   Screendrop      not in brew
+#   SafeNet         vendor download
+#   BulsatcomTV     vendor download
+#   CuaDriver       installer script

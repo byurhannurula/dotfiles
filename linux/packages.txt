@@ -1,0 +1,60 @@
+# apt packages — one per line, # for comments.
+# Installed by install.sh in a single transaction.
+
+# ---- base -------------------------------------------------------------------
+zsh
+git
+curl
+wget
+gnupg
+ca-certificates
+openssh-server
+build-essential
+unzip
+zip
+rsync
+git-lfs
+
+# ---- editors and multiplexer ------------------------------------------------
+tmux
+vim
+neovim
+less
+
+# ---- inspection -------------------------------------------------------------
+htop
+btop
+ncdu
+tree
+jq
+
+# ---- shell tooling ----------------------------------------------------------
+# The aliases in shared/aliases.zsh are guarded on these. Note Debian renames
+# two of them: bat -> batcat, fd-find -> fdfind. aliases.zsh handles both.
+eza
+bat
+fd-find
+ripgrep
+fzf
+
+# ---- python -----------------------------------------------------------------
+python3
+python3-pip
+python3-venv
+pipx
+
+# ---- network debugging ------------------------------------------------------
+dnsutils
+iputils-ping
+netcat-openbsd
+traceroute
+nmap
+net-tools
+
+# ---- desktop ----------------------------------------------------------------
+xclip
+xdotool
+
+# ---- system health ----------------------------------------------------------
+smartmontools
+unattended-upgrades
