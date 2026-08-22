@@ -263,6 +263,23 @@ if ask "7/9  Install app config (ghostty, vscode, zed, btop, obsidian)?"; then
     V="$HOME/Library/Application Support/Code/User"
   else
     put linux/ghostty/config "$HOME/.config/ghostty/config"
+
+    # Natural scrolling has to be re-applied at every login: XFCE's own mouse
+    # toggle reverts to libinput's per-device default otherwise.
+    if [ -f linux/mac-trackpad-scroll.sh ]; then
+      mkdir -p "$HOME/.local/bin" "$HOME/.config/autostart"
+      cp linux/mac-trackpad-scroll.sh "$HOME/.local/bin/mac-trackpad-scroll.sh"
+      chmod +x "$HOME/.local/bin/mac-trackpad-scroll.sh"
+      cat > "$HOME/.config/autostart/mac-trackpad-scroll.desktop" <<DESKTOP
+[Desktop Entry]
+Type=Application
+Name=Mac-style trackpad scrolling
+Exec=$HOME/.local/bin/mac-trackpad-scroll.sh
+X-GNOME-Autostart-enabled=true
+NoDisplay=true
+DESKTOP
+      printf '    %s\n' ".local/bin/mac-trackpad-scroll.sh (autostart)"
+    fi
     V="$HOME/.config/Code/User"
   fi
   put "$OS/vscode/settings.json"    "$V/settings.json"

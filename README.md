@@ -22,6 +22,7 @@ linux/
   .zshrc                PATH and clipboard shims; sources zshrc.common
   aliases.linux.zsh     apt, systemd, ss
   packages.txt          40 apt packages
+  mac-trackpad-scroll.sh  natural scrolling, re-applied at login
 claude/                 CLAUDE.md, settings.json, statusline
 docs/                   packages.md, linux-setup.md
 _legacy/                the previous repo and every earlier .zshrc
@@ -138,7 +139,10 @@ is stored in this repo.
 | Network | dnsutils, ping, netcat, traceroute, nmap, net-tools |
 | Desktop | xclip, xdotool |
 
-Linux uses zsh and oh-my-zsh, same as the Mac. `.bashrc` is a fallback only.
+Linux runs zsh and oh-my-zsh, exactly as the Mac does — there is no bash config
+here. `mac-trackpad-scroll.sh` is installed to `~/.local/bin` with an autostart
+entry, because XFCE reverts natural scrolling to libinput's default on every
+login.
 
 ## macOS settings
 
@@ -297,6 +301,18 @@ Install these by hand:
 `mas list` returns nothing on this machine because Spotlight indexing is off
 and `mas` reads that index. The App Store lines in the Brewfile are commented
 with their public IDs — verify with `mas search <name>` before relying on them.
+
+## Obsidian
+
+Settings live inside the vault, not `~/Library`, so they install into
+`$OBSIDIAN_VAULT` (default `~/Documents/obsidian-bbn`, overridable).
+
+Tracked: appearance, hotkeys, graph, daily-notes, templates, the two plugin
+lists, three CSS snippets, and the `mnml` theme manifest — 48K.
+
+Not tracked: plugin code and `theme.css` (340K on its own). Obsidian
+re-downloads both from `community-plugins.json` and the theme manifest when the
+vault is first opened.
 
 ## Hooks and CI
 
