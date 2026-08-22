@@ -12,7 +12,7 @@
 # bash 3.2 compatible — macOS ships 3.2 and will never update it.
 
 set -uo pipefail
-cd "$(dirname "$0")"
+cd "$(dirname "$0")" || exit 1
 
 say()  { printf '\033[0;34m→\033[0m %s\n' "$1"; }
 ok()   { printf '\033[0;32m✓\033[0m %s\n' "$1"; }
@@ -181,6 +181,19 @@ fi
 # an empty Dock.
 if [ "$OS" = macos ] && [ -z "$IS_CI" ] && ask "4/9  Set Dock contents from macos/dock.txt?"; then
   bash macos/dock.sh
+fi
+
+# ---- git hooks ---------------------------------------------------------------
+# .git/hooks/ is not tracked by git, so a hook committed to the repo does
+# nothing until core.hooksPath points at it. That is why this belongs in the
+# installer rather than being a one-time manual step.
+if [ -d .githooks ] && [ -d .git ]; then
+  if [ "$(git config core.hooksPath 2>/dev/null)" = ".githooks" ]; then
+    say "git hooks already enabled"
+  else
+    git config core.hooksPath .githooks && ok "git hooks enabled (gitleaks pre-commit)"
+  fi
+  command -v gitleaks >/dev/null 2>&1 || warn "gitleaks not installed — the hook will skip until it is"
 fi
 
 # ---- oh-my-zsh plugins ------------------------------------------------------

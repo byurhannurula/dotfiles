@@ -298,6 +298,59 @@ Install these by hand:
 and `mas` reads that index. The App Store lines in the Brewfile are commented
 with their public IDs — verify with `mas search <name>` before relying on them.
 
+## Hooks and CI
+
+### Pre-commit secret scan
+
+`.githooks/pre-commit` runs [gitleaks](https://github.com/gitleaks/gitleaks)
+against the staged diff and refuses the commit if it finds a secret. Enabled by
+`install.sh`, or by hand:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+That config step is the whole point: `.git/hooks/` is **not tracked by git**, so
+a hook committed to a repo does nothing until something points git at it. This
+repo went most of its life with the hook present in an old branch and never
+active.
+
+No husky, no `package.json` — `core.hooksPath` is native git and needs nothing
+installed. If gitleaks is missing the hook warns and allows the commit rather
+than blocking work; `git commit --no-verify` bypasses it in an emergency.
+
+GitHub push protection is not a substitute. It only catches vendor tokens with
+recognisable shapes, so it will miss an SSH private key, a `.env`, or any
+high-entropy string — which is most of the dotfiles risk. It also fires at push,
+by which point the secret is already in local history.
+
+### GitHub Actions
+
+`.github/workflows/ci.yml` runs on push, PR, and weekly.
+
+| Job | Runner | Does |
+|---|---|---|
+| `lint` | ubuntu | shellcheck, `zsh -n` on every shell file, gitleaks |
+| `linux` | ubuntu | `./install.sh -y`, then again for idempotence |
+| `macos` | macos | Brewfile parses, both `--dry` runs, formulae install, idempotence |
+
+Three things the workflow does deliberately:
+
+- **Runs the installer twice.** A second run must succeed — that is what proves
+  idempotence, and it is cheap given the copy-plus-backup design.
+- **Asserts a silent login shell.** `zsh -lic exit` must print nothing to
+  stderr. This catches broken rc files nothing else surfaces; it is how the
+  `gc` alias collision was found.
+- **Skips casks on macOS.** ~50 GUI apps would exceed the timeout and would be
+  testing Homebrew rather than this repo. It also deletes the runner's
+  preinstalled Firefox and Chrome first, since brew refuses to install a cask
+  over an existing app.
+
+The Homebrew **download** cache is cached; the Cellar deliberately is not.
+Restoring a Cellar over the runner's own Homebrew leaves kegs
+present-but-unregistered and breaks `brew bundle`. The weekly run skips the
+cache entirely to simulate a genuinely fresh machine.
+
 ## Secrets
 
 None in this repo. SSH keys and passwords live in Bitwarden; each AI agent
@@ -311,6 +364,7 @@ both of which carry live credentials.
 
 ```bash
 ./install.sh                    # re-run any group after editing a file
+git config core.hooksPath .githooks        # enable the secret scan once per clone
 ./macos/defaults.sh --dry       # preview system preference changes
 brew bundle --file=macos/Brewfile          # packages only
 brew bundle cleanup --file=macos/Brewfile  # what is installed but undeclared

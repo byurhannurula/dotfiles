@@ -1,0 +1,121 @@
+name: ci
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  schedule:
+    - cron: '0 6 * * 1'      # Monday 06:00 UTC — uncached, as a fresh machine
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: shellcheck
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y shellcheck
+          shellcheck -S warning install.sh macos/*.sh .githooks/pre-commit
+
+      - name: zsh syntax
+        run: |
+          sudo apt-get install -y zsh
+          for f in shared/*.zsh shared/zshrc.common macos/*.zsh macos/.zshrc \
+                   linux/*.zsh linux/.zshrc; do
+            [ -f "$f" ] && zsh -n "$f"
+          done
+
+      - name: gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  linux:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      # -y accepts every group. Without a TTY the script declines everything,
+      # so this also proves the non-interactive path works.
+      - name: install
+        run: ./install.sh -y
+        env:
+          CI: 1
+
+      - name: idempotence — a second run must succeed
+        run: ./install.sh -y
+        env:
+          CI: 1
+
+      # Catches broken rc files nothing else surfaces: a login shell that
+      # prints to stderr is a bug even when it exits 0.
+      - name: login shell must be silent
+        run: |
+          errors=$(zsh -lic 'exit' 2>&1 >/dev/null) || true
+          [ -z "$errors" ] || { echo "$errors"; exit 1; }
+
+  macos:
+    runs-on: macos-latest
+    timeout-minutes: 45
+    env:
+      HOMEBREW_NO_AUTO_UPDATE: 1
+      HOMEBREW_NO_ANALYTICS: 1
+      HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
+    steps:
+      - uses: actions/checkout@v4
+
+      # The runner ships these, and the Brewfile declares them as casks — brew
+      # refuses to install over an existing app rather than clobbering it.
+      - name: remove preinstalled apps that collide with casks
+        run: sudo rm -rf "/Applications/Firefox.app" "/Applications/Google Chrome.app"
+
+      # Cache the DOWNLOAD cache only. Caching the Cellar leaves kegs
+      # present-but-unregistered on top of the runner's own Homebrew and
+      # breaks brew bundle with "File exists" / "No such keg".
+      - name: cache homebrew downloads
+        if: github.event_name != 'schedule'
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Caches/Homebrew
+          key: brew-${{ hashFiles('macos/Brewfile') }}
+          restore-keys: brew-
+
+      - name: Brewfile parses
+        run: brew bundle list --file=macos/Brewfile >/dev/null
+
+      # Never applies anything: --dry only reads and reports drift. Applying
+      # real defaults on a runner proves nothing and risks the rest of the job.
+      - name: defaults dry run
+        run: ./macos/defaults.sh --dry
+
+      - name: dock dry run
+        run: ./macos/dock.sh --dry
+
+      # Casks are excluded: ~50 GUI apps would take longer than the timeout and
+      # exercise Homebrew rather than this repo. The formulae path is the part
+      # worth proving.
+      - name: install (formulae only, no casks)
+        run: |
+          grep -v '^cask ' macos/Brewfile > /tmp/Brewfile.nocask
+          brew bundle --file=/tmp/Brewfile.nocask || true
+          ./install.sh -y
+        env:
+          CI: 1
+          HOMEBREW_BUNDLE_FILE: /tmp/Brewfile.nocask
+
+      - name: idempotence — a second run must succeed
+        run: ./install.sh -y
+        env:
+          CI: 1
+          HOMEBREW_BUNDLE_FILE: /tmp/Brewfile.nocask
+
+      - name: login shell must be silent
+        run: |
+          errors=$(zsh -lic 'exit' 2>&1 >/dev/null) || true
+          [ -z "$errors" ] || { echo "$errors"; exit 1; }

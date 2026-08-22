@@ -1,0 +1,24 @@
+#!/bin/sh
+#
+# Block commits containing secrets.
+#
+# Enabled by `git config core.hooksPath .githooks`, which install.sh does.
+# .git/hooks/ is not tracked by git, so a hook committed to the repo does
+# nothing until something points git at this directory.
+#
+# Bypass in an emergency with: git commit --no-verify
+
+command -v gitleaks >/dev/null 2>&1 || {
+  printf '\033[0;33m!\033[0m gitleaks not installed — commit NOT scanned\n' >&2
+  printf '  brew install gitleaks\n' >&2
+  exit 0
+}
+
+# --staged scans what is about to be committed, not the whole history.
+# --redact keeps any finding out of terminal scrollback and CI logs.
+gitleaks git --staged --redact --no-banner || {
+  printf '\033[0;31m✗\033[0m gitleaks blocked this commit.\n' >&2
+  printf '  Remove the secret, or annotate the line with: # gitleaks:allow\n' >&2
+  printf '  Emergency bypass: git commit --no-verify\n' >&2
+  exit 1
+}
