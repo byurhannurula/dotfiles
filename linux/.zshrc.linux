@@ -1,0 +1,19 @@
+# Sourced at the END of .zshrc. Bridges a config written for macOS, so the
+# copied .zshrc can stay byte-identical to the Mac's.
+
+# --- clipboard and open ---------------------------------------------------
+command -v pbcopy  >/dev/null || alias pbcopy='xclip -selection clipboard'
+command -v pbpaste >/dev/null || alias pbpaste='xclip -selection clipboard -o'
+command -v open    >/dev/null || alias open='xdg-open'
+
+# --- the nix-darwin aliases are dead on this machine ----------------------
+# rebuild / rbcheck / rbdiff / update / gens / rollback / gc-nix / storesize
+# all call darwin-rebuild. Left unaliased deliberately: a command that fails
+# loudly is better than one silently redefined to mean something else here.
+unalias rebuild rbcheck rbdiff gens rollback gc-nix storesize 2>/dev/null
+
+# --- paths ----------------------------------------------------------------
+[[ -d /opt/homebrew/bin ]] && export PATH="/opt/homebrew/bin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
+export NVM_DIR="$HOME/.nvm"
+[[ -s "$NVM_DIR/nvm.sh" ]] && . "$NVM_DIR/nvm.sh"

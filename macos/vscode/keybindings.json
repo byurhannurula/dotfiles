@@ -1,0 +1,28 @@
+// Place your key bindings in this file to override the defaultsauto[]
+[
+  {
+    "key": "ctrl+shift+a",
+    "command": "workbench.action.toggleActivityBarVisibility",
+  },
+  {
+    "key": "ctrl+shift+s",
+    "command": "workbench.action.toggleStatusbarVisibility",
+  },
+  {
+    "key": "ctrl+alt+cmd+down",
+    "command": "workbench.action.terminal.focusNext",
+  },
+  {
+    "key": "ctrl+alt+cmd+up",
+    "command": "workbench.action.terminal.focusPrevious",
+  },
+
+  {
+    "key": "shift+enter",
+    "command": "workbench.action.terminal.sendSequence",
+    "args": {
+      "text": "\u001b[13;2u",
+    },
+    "when": "terminalFocus",
+  },
+]

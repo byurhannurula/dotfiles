@@ -1,1 +1,57 @@
+# =============================================================================
+# This repo holds CONFIG FILES ONLY.
+#   - setup scripts live in a separate repo
+#   - captures are a local working artifact, never committed
+# =============================================================================
+
+# ---- scripts and captures: out of scope ------------------------------------
+scripts/
+capture-*/
+
+# ---- key material — never, under any circumstance ---------------------------
+id_rsa
+id_dsa
+id_ecdsa
+id_ed25519
+id_*
+!id_*.pub
+*.pem
+*.key
+*.p12
+*.pfx
+keys.txt
+*.agekey
+
+# ---- credentials that tools scatter around ----------------------------------
+# gh/hosts.yml holds an OAuth token; herdr/session.json holds a live session.
+.env
+.env.*
+!.env.example
+.netrc
+.npmrc
+hosts.yml
+session.json
+credentials
+credentials.json
+*service-account*.json
+
+# ---- caches that sit next to real config ------------------------------------
+# opencode is 57M and raycast 45M on disk; only their small JSON configs are
+# tracked. Belt and braces in case a whole directory is ever copied in.
+node_modules/
+**/plugins/cache/
+**/plugins/marketplaces/
+*.log
+
+# ---- macOS / editors --------------------------------------------------------
 .DS_Store
+._*
+*.swp
+*~
+
+# Raycast's config.json is ONLY an access token — no settings in it.
+# Raycast settings export is a manual action; keep the export, not this file.
+raycast/config.json
+
+# staging area for the scripts repo — not config
+ai-dev/
