@@ -48,17 +48,22 @@ Order matters on a fresh machine — each step depends on the ones before.
 
 | # | Group | Does | Time |
 |---|---|---|---|
-| 1 | macOS defaults | Finder, Dock, pointer, screenshots | fast |
+| 1 | macOS defaults | Finder, Dock, pointer, text input, screenshots | fast |
 | 2 | hostname | all three macOS names, or `hostnamectl` | fast |
 | 3 | packages | everything from the Brewfile / packages.txt | **20–40 min** |
-| 4 | oh-my-zsh | the framework plus 4 plugins, optional `chsh` | ~1 min |
-| 5 | shell config | `.zshrc`, `.zshrc.common`, aliases, git | fast |
-| 6 | app config | ghostty, vscode, zed, btop | fast |
-| 7 | vscode extensions | 18 extensions | ~2 min |
-| 8 | AI agents | config, then install and verify claude + opencode | ~2 min |
+| 4 | Dock contents | the apps in `macos/dock.txt`, in order | fast |
+| 5 | oh-my-zsh | the framework plus 3 plugins, optional `chsh` | ~1 min |
+| 6 | shell config | `.zshrc`, `.zshrc.common`, aliases, git | fast |
+| 7 | app config | ghostty, vscode, zed, btop, obsidian | fast |
+| 8 | vscode extensions | 18 extensions | ~2 min |
+| 9 | AI agents | config, then install and verify claude + opencode | ~2 min |
 
-Step 3 installs zsh, git, `code` and the GUI apps, so steps 4–8 all depend
-on it. Step 1 runs first so no window opens with the wrong settings.
+Step 3 installs zsh, git, `code` and the GUI apps, so steps 4–9 all depend on
+it — step 4 in particular skips any Dock app that is not installed yet. Step 1
+runs first so no window opens with the wrong settings.
+
+Every group asks `[y/N]` and defaults to no. Interactivity is detected from the
+terminal, so piping or running in CI declines everything rather than hanging.
 
 It bootstraps what a new Mac lacks: Xcode Command Line Tools (a GUI installer,
 so it waits for you), Homebrew, and oh-my-zsh.
@@ -67,15 +72,24 @@ so it waits for you), Homebrew, and oh-my-zsh.
 
 ### Shell tooling
 
-Installed: `eza` `bat` `fzf` `ripgrep` `jq` `gh`
+Installed: `eza` (ls) `bat` (cat) `btop` (top) `ripgrep` (grep) `fzf` `jq` `gh`
 
 Every alias is guarded on the binary existing, so a missing tool leaves the
-plain command alone.
+plain command alone — the same file works on a machine that has none of them.
 
-18 more are listed commented in the Brewfile (`git-delta`, `duf`, `dust`,
-`procs`, `fd`, `tldr`, `zoxide`, `direnv`, `atuin`, `mise`, `lazygit`, `yq`,
-`httpie`, `hyperfine`, `watchexec`, `gping`, `trash`, `uv`). Uncomment one and
-its alias appears on the next shell.
+Six more are listed commented in the Brewfile: `git-delta`, `fd`, `zoxide`,
+`direnv`, `lazygit`, `trash`. Each already has a guarded alias or hook waiting;
+uncomment, run `brew bundle`, and it activates on the next shell.
+
+### Node
+
+`nvm`, loaded lazily: `nvm`, `node`, `npm` and `npx` are stub functions that
+load the real thing on first use, so the shell starts in ~0.3s rather than
+~1.4s. `.nvmrc` is honoured — `cd` into a project and it switches version
+silently.
+
+`mise` is deliberately not used. Its value is managing Python/Go/Ruby alongside
+Node, and this is a Node-only machine.
 
 ### AI agents
 
@@ -125,6 +139,149 @@ is stored in this repo.
 | Desktop | xclip, xdotool |
 
 Linux uses zsh and oh-my-zsh, same as the Mac. `.bashrc` is a fallback only.
+
+## macOS settings
+
+Applied by `macos/defaults.sh`. Preview with `./macos/defaults.sh --dry`, which
+prints every change and touches nothing. Log out for the keyboard and trackpad
+settings to take effect.
+
+Values marked *captured* were read from this machine; the rest are chosen
+defaults.
+
+### Text input
+
+All five are **on by default and actively corrupt code** — smart quotes turn
+`"` into a curly pair, smart dashes turn `--` into an em dash, and autocorrect
+rewrites identifiers. Anything typed or pasted through a Cocoa text field is
+affected.
+
+| Setting | Value |
+|---|---|
+| `NSAutomaticQuoteSubstitutionEnabled` | false |
+| `NSAutomaticDashSubstitutionEnabled` | false |
+| `NSAutomaticSpellingCorrectionEnabled` | false |
+| `NSAutomaticCapitalizationEnabled` | false |
+| `NSAutomaticPeriodSubstitutionEnabled` | false |
+
+Override per app if you want autocorrect back somewhere:
+
+```bash
+defaults write md.obsidian NSAutomaticSpellingCorrectionEnabled -bool true
+```
+
+### Pointer and keyboard
+
+| Setting | Value | Effect |
+|---|---|---|
+| `com.apple.mouse.scaling` | 1.5 | mouse tracking speed *(captured)* |
+| `com.apple.trackpad.scaling` | 0.875 | trackpad tracking speed *(captured)* |
+| `com.apple.swipescrolldirection` | false | **natural scrolling off** *(captured)* |
+| `AppleKeyboardUIMode` | 3 | tab reaches every control, not just text fields |
+| `InitialKeyRepeat` | 15 | delay before a held key repeats |
+| `KeyRepeat` | 2 | repeat rate once going |
+| `ApplePressAndHoldEnabled` | false | key repeat instead of the accent picker |
+| `AppleMultitouchTrackpad Clicking` | true | tap to click |
+| `TrackpadThreeFingerDrag` | false | three-finger drag off *(captured)* |
+
+### Finder
+
+| Setting | Value | Effect |
+|---|---|---|
+| `AppleShowAllFiles` | true | show dotfiles |
+| `AppleShowAllExtensions` | true | never hide a file extension |
+| `ShowPathbar` / `ShowStatusBar` | true | path and status bars |
+| `FXPreferredViewStyle` | `Nlsv` | list view everywhere |
+| `FXEnableExtensionChangeWarning` | false | no nag when renaming `.txt` to `.md` |
+| `_FXSortFoldersFirst` | true | folders above files |
+| `FXDefaultSearchScope` | `SCcf` | search the current folder, not the whole Mac |
+| `_FXShowPosixPathInTitle` | true | full path in the title bar |
+| `DSDontWriteNetworkStores` | true | no `.DS_Store` on network shares |
+| `DSDontWriteUSBStores` | true | no `.DS_Store` on USB drives |
+
+### Dock
+
+| Setting | Value | Effect |
+|---|---|---|
+| `autohide` | true | hidden until hovered |
+| `autohide-delay` | 0 | appears immediately |
+| `autohide-time-modifier` | 0 | instant slide (0.5 is *slower* than stock) |
+| `expose-animation-duration` | 0.1 | faster Mission Control |
+| `tilesize` | 48 | icon size |
+| `show-recents` | false | no recent-apps section |
+| `mru-spaces` | false | stop spaces reordering themselves |
+
+Dock **contents** are separate — see `macos/dock.txt` and `macos/dock.sh`.
+
+### Screenshots
+
+| Setting | Value |
+|---|---|
+| `location` | `~/Desktop/Screenshots` |
+| `type` | png |
+| `disable-shadow` | true |
+| `show-thumbnail` | false | no floating preview blocking the screen |
+
+### System
+
+| Setting | Value | Effect |
+|---|---|---|
+| `controlcenter BatteryShowPercentage` | true | battery percentage — needs `-currentHost` |
+| `NSDisableAutomaticTermination` | true | macOS stops quitting idle apps |
+| `CrashReporter DialogType` | none | no crash dialogs |
+| `NSDocumentSaveNewDocumentsToCloud` | false | save to disk, not iCloud |
+| `NSNavPanelExpandedStateForSaveMode` | true | save panel opens expanded |
+| `PMPrintingExpandedStateForPrint` | true | print panel opens expanded |
+
+### Deliberately not set
+
+- **`LSQuarantine`** stays enabled. Disabling it removes the "downloaded from
+  the internet" check, which is a real malware guard on a daily driver. The
+  `unquarantine` alias handles the occasional unnotarised binary instead.
+- **`pmset` sleep settings** — suit an always-on box, not a laptop.
+- **Hot corners, TCC grants, login items** — Apple removed or never provided a
+  scriptable path. These are permanently manual.
+- **Screensaver password** (`com.apple.screensaver askForPassword`) — the key no
+  longer exists on Tahoe. Use `sysadminctl -screenLock immediate -password -`.
+- **`com.apple.menuextra.battery`** — a dead domain since Big Sur. The working
+  key is `com.apple.controlcenter BatteryShowPercentage`, set above.
+- **`killall cfprefsd`** — it is the preferences daemon, and killing it can drop
+  writes still sitting in its cache.
+
+`macos/defaults.sh` compares each value before writing, so `--dry` is a drift
+report rather than a transcript: it prints `same:` for what already matches and
+`set: old -> new` for what would change.
+
+> `defaults write` returning 0 does **not** mean the setting took effect. Many
+> keys still write cleanly to a plist that nothing reads any more. If a setting
+> appears to do nothing, verify it in System Settings rather than trusting the
+> exit code.
+
+## zsh
+
+`shared/zshrc.common` holds the shell core; `macos/.zshrc` and `linux/.zshrc`
+add only what differs. Theme is `robbyrussell`.
+
+| Plugin | Gives you |
+|---|---|
+| `git` | ~150 aliases — `gst`, `gco`, `gd`, `gl` |
+| `z` | `z dotfi` jumps to a directory you visit often |
+| `extract` | `x file.anything` unpacks any archive |
+| `command-not-found` | suggests the package providing a missing command |
+| `zsh-completions` | completions for tools that ship none |
+| `zsh-autosuggestions` | greys in a suggestion from history; `→` accepts |
+| `zsh-syntax-highlighting` | commands turn red when invalid — loads last |
+
+The first four ship with oh-my-zsh. The last three are cloned by step 5.
+
+Aliases are split three ways: `shared/aliases.zsh` (portable),
+`macos/aliases.macos.zsh` (`defaults`, `lsof`, `brew`), and
+`linux/aliases.linux.zsh` (`apt`, `systemd`, `ss`). Where both OSes need the
+same idea with a different implementation — `ports`, `killport`, `localip` —
+each file defines its own; only one is ever loaded.
+
+A terminal opened at `$HOME` starts in `~/dev`. Editor and agent shells are
+excluded, since they open in a project directory on purpose.
 
 ## Not installed
 

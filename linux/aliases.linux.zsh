@@ -27,7 +27,6 @@ killport() {
   echo "$pids" | xargs sudo kill -9
 }
 
-alias myip='curl -s https://ifconfig.me && echo'
 alias localip="hostname -I | awk '{print \$1}'"
 alias o='xdg-open .' 
 alias temps="sensors 2>/dev/null || echo 'lm-sensors not installed'"

@@ -1,0 +1,102 @@
+/* Dashboard layout for a note with cssclasses: [dashboard].
+   Turns stacked Dataview blocks into a grid. Each H2 becomes a card. */
+
+.dashboard .markdown-preview-view,
+.dashboard .markdown-source-view.mod-cm6 .cm-contentContainer {
+  --dash-gap: 1rem;
+}
+
+/* Hide the H1 and the frontmatter chrome; the tab already names the page. */
+.dashboard .markdown-preview-view h1,
+.dashboard .cm-content > .HyperMD-header-1 {
+  display: none;
+}
+
+/* Stat strip: the first block, a table with one row of numbers. */
+.dashboard .dash-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: var(--dash-gap);
+  margin-bottom: 1.5rem;
+}
+
+.dashboard .dash-stat {
+  background: var(--background-secondary);
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+}
+
+.dashboard .dash-stat-value {
+  font-size: 1.7em;
+  font-weight: 600;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.dashboard .dash-stat-label {
+  font-size: 0.75em;
+  color: var(--text-muted);
+  margin-top: 0.15rem;
+}
+
+/* Card grid: every H2 and the content under it becomes a card.
+   Obsidian does not wrap sections, so style the heading and let the
+   following siblings inherit the column via CSS columns. */
+.dashboard .markdown-preview-section {
+  column-gap: var(--dash-gap);
+}
+
+.dashboard h2 {
+  font-size: 0.8em;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-top: 1.75rem;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+/* Dataview output inside the dashboard: compact, no heavy table chrome. */
+.dashboard .block-language-dataview table {
+  font-size: 0.87em;
+  border: none;
+}
+
+.dashboard .block-language-dataview th {
+  font-size: 0.72em;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-faint);
+  font-weight: 500;
+  border-bottom: 1px solid var(--background-modifier-border);
+  padding-bottom: 0.3rem;
+}
+
+.dashboard .block-language-dataview td {
+  border: none;
+  padding: 0.3rem 0.6rem 0.3rem 0;
+}
+
+.dashboard .block-language-dataview tr:hover td {
+  background: var(--background-modifier-hover);
+}
+
+.dashboard .block-language-dataview ul {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.dashboard .block-language-dataview li {
+  margin-bottom: 0.2rem;
+}
+
+/* Two columns on a wide pane, one on a narrow one. */
+@media (min-width: 900px) {
+  .dashboard .dash-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 2rem;
+  }
+}

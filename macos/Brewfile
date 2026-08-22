@@ -32,26 +32,15 @@ brew "ripgrep"          # grep
 brew "jq"
 brew "gh"
 
-# Everything below is optional — see docs/packages.md for what each does.
-# Uncomment a line to adopt it; the matching alias appears automatically.
+# Not installed. Each has a guarded alias or hook ready in shared/aliases.zsh
+# or shared/zshrc.common — uncomment here, run brew bundle, and it activates on
+# the next shell. Nothing breaks while they are absent.
 # brew "git-delta"      # diff, and git's pager
-# brew "duf"            # df
-# brew "dust"           # du
-# brew "procs"          # ps
 # brew "fd"             # find
-# brew "tldr"           # man
-# brew "zoxide"         # z — jump to frecent dirs
+# brew "zoxide"         # z, but smarter
 # brew "direnv"         # per-directory env
-# brew "atuin"          # history in sqlite, searchable
-# brew "mise"           # node/python/go versions — replaces nvm
 # brew "lazygit"
-# brew "yq"
-# brew "httpie"
-# brew "hyperfine"
-# brew "watchexec"
-# brew "gping"
 # brew "trash"          # undoable rm
-# brew "uv"             # fast python packaging
 
 # =============================================================================
 # AI CODING AGENTS
@@ -86,6 +75,7 @@ brew "shellcheck"
 brew "gitleaks"         # the pre-commit secret scanner
 brew "xmlstarlet"
 brew "mas"              # App Store CLI
+brew "dockutil"         # sets Dock contents; see macos/dock.sh
 
 # ---- languages and build ----------------------------------------------------
 brew "cmake"

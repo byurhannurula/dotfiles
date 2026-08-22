@@ -1,0 +1,12 @@
+# Dock contents, in order. One app path per line, # for comments.
+# Applied by macos/dock.sh. An app that is not installed is skipped rather
+# than left as a "?" placeholder tile.
+#
+# Captured from bbn-mbp on 2026-08-22.
+
+/Applications/Brave Browser.app
+/Applications/Obsidian.app
+/Applications/Discord.app
+/Applications/Visual Studio Code.app
+/Applications/Claude.app
+/Applications/Ghostty.app

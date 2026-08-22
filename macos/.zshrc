@@ -28,6 +28,17 @@ path=(
 export HOMEBREW_NO_AUTO_UPDATE=1     # brew install should not also update
 export HOMEBREW_NO_ENV_HINTS=1
 
+# ---- start in ~/dev ----------------------------------------------------------
+# Only for a terminal opened fresh at $HOME. Guards matter: VS Code, Zed and
+# agent shells open in the project directory on purpose, and cd-ing away from
+# it breaks relative paths. $PWD = $HOME is the "no directory was chosen" case.
+if [[ -o interactive && "$PWD" == "$HOME" && -d "$HOME/dev" ]]; then
+  case "${TERM_PROGRAM:-}" in
+    vscode|zed) ;;                     # editor terminals: stay put
+    *) [ -z "${CLAUDECODE:-}${CI:-}" ] && cd "$HOME/dev" ;;
+  esac
+fi
+
 # ---- per-machine ------------------------------------------------------------
 # Not in git: anything true of this one Mac only.
 # The trailing `true` keeps $? at 0 when the file is absent.

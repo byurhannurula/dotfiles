@@ -25,14 +25,10 @@ killport() {
 }
 
 # ---- system -----------------------------------------------------------------
-alias intel="arch -x86_64"                 # run a command under Rosetta
 alias flushdns="sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder"
 alias showFiles='defaults write com.apple.finder AppleShowAllFiles YES; killall Finder'
 alias hideFiles='defaults write com.apple.finder AppleShowAllFiles NO; killall Finder'
-alias cpu='sudo powermetrics --samplers cpu_power -i1000 -n1'
 alias battery='pmset -g batt'
-alias wifi='networksetup -getairportnetwork en0'
-alias myip='curl -s https://ifconfig.me && echo'
 alias localip="ipconfig getifaddr en0"
 
 # Keep the Mac awake until you Ctrl-C.  awake
@@ -51,12 +47,3 @@ alias bo='brew outdated'
 # "app is damaged and can't be opened" after downloading a signed-but-unnotarised
 # binary. Strips the com.apple.quarantine attribute.
 unquarantine() { sudo xattr -rd com.apple.quarantine "$@"; }
-
-# ---- mysql ------------------------------------------------------------------
-# A local /usr/local/mysql install, not the brew formula.
-alias mysql="/usr/local/mysql/bin/mysql"
-alias mysqldump="/usr/local/mysql/bin/mysqldump"
-alias mysql.start="sudo /usr/local/mysql/support-files/mysql.server start"
-alias mysql.stop="sudo /usr/local/mysql/support-files/mysql.server stop"
-alias mysql.restart="sudo /usr/local/mysql/support-files/mysql.server restart"
-alias mysql.status="sudo /usr/local/mysql/support-files/mysql.server status"
