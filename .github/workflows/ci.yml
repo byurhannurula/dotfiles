@@ -25,7 +25,8 @@ jobs:
       - name: zsh syntax
         run: |
           sudo apt-get install -y zsh
-          for f in shared/*.zsh shared/zshrc.common macos/*.zsh macos/.zshrc \
+          for f in shared/*.zsh shared/zshrc.common shared/.zshenv \
+                   shared/.zprofile macos/*.zsh macos/.zshrc \
                    linux/*.zsh linux/.zshrc; do
             [ -f "$f" ] && zsh -n "$f"
           done
@@ -59,6 +60,20 @@ jobs:
         run: |
           errors=$(zsh -lic 'exit' 2>&1 >/dev/null) || true
           [ -z "$errors" ] || { echo "$errors"; exit 1; }
+
+      # node/npm are shell functions in .zshrc (lazy nvm). Functions are
+      # invisible to raw PATH lookups, so without .zshenv putting a real node
+      # on PATH, every non-interactive shell and `env node` shebang breaks.
+      # Skipped when nvm is absent — the runner may have no nvm install.
+      - name: node must work non-interactively
+        run: |
+          [ -r "$HOME/.nvm/alias/default" ] || { echo "no nvm — skipped"; exit 0; }
+          zsh -c 'node --version' || {
+            echo "node unreachable in a non-interactive shell"; exit 1; }
+          printf '#!/usr/bin/env node\nprocess.exit(0)\n' > /tmp/shebang.js
+          chmod +x /tmp/shebang.js
+          zsh -c '/tmp/shebang.js' || {
+            echo "env-node shebang failed"; exit 1; }
 
   macos:
     runs-on: macos-latest
@@ -119,3 +134,17 @@ jobs:
         run: |
           errors=$(zsh -lic 'exit' 2>&1 >/dev/null) || true
           [ -z "$errors" ] || { echo "$errors"; exit 1; }
+
+      # node/npm are shell functions in .zshrc (lazy nvm). Functions are
+      # invisible to raw PATH lookups, so without .zshenv putting a real node
+      # on PATH, every non-interactive shell and `env node` shebang breaks.
+      # Skipped when nvm is absent — the runner may have no nvm install.
+      - name: node must work non-interactively
+        run: |
+          [ -r "$HOME/.nvm/alias/default" ] || { echo "no nvm — skipped"; exit 0; }
+          zsh -c 'node --version' || {
+            echo "node unreachable in a non-interactive shell"; exit 1; }
+          printf '#!/usr/bin/env node\nprocess.exit(0)\n' > /tmp/shebang.js
+          chmod +x /tmp/shebang.js
+          zsh -c '/tmp/shebang.js' || {
+            echo "env-node shebang failed"; exit 1; }
