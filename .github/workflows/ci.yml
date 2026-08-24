@@ -61,10 +61,9 @@ jobs:
           errors=$(zsh -lic 'exit' 2>&1 >/dev/null) || true
           [ -z "$errors" ] || { echo "$errors"; exit 1; }
 
-      # node/npm are shell functions in .zshrc (lazy nvm). Functions are
-      # invisible to raw PATH lookups, so without .zshenv putting a real node
-      # on PATH, every non-interactive shell and `env node` shebang breaks.
-      # Skipped when nvm is absent — the runner may have no nvm install.
+      # .zshenv must put a real node on PATH: shell functions are invisible to
+      # raw PATH lookups, so `env node` shebangs and non-interactive shells
+      # need the binary itself. Skipped when nvm is absent.
       - name: node must work non-interactively
         run: |
           [ -r "$HOME/.nvm/alias/default" ] || { echo "no nvm — skipped"; exit 0; }
@@ -74,6 +73,25 @@ jobs:
           chmod +x /tmp/shebang.js
           zsh -c '/tmp/shebang.js' || {
             echo "env-node shebang failed"; exit 1; }
+
+      # node/npm/npx must stay plain binaries. Wrapping them in lazy-loading
+      # functions caused a recursion storm: when the helper went missing from
+      # a shell's environment, Homebrew's command_not_found_handler re-invoked
+      # the wrapper until FUNCNEST tripped, emitting ~700 errors per command.
+      - name: node must not be a shell function
+        run: |
+          [ -r "$HOME/.nvm/alias/default" ] || { echo "no nvm — skipped"; exit 0; }
+          for c in node npm npx; do
+            t=$(zsh -lic "type -w $c" 2>/dev/null | tail -1)
+            case "$t" in
+              *function*) echo "$c is a shell function: $t"; exit 1 ;;
+            esac
+          done
+          # A shell missing the loader must still run npm, not recurse.
+          out=$(zsh -lic 'unset -f _nvm_load 2>/dev/null; npm --version' 2>&1)
+          case "$out" in
+            *FUNCNEST*|*_nvm_load*) echo "recursion returned: $out"; exit 1 ;;
+          esac
 
   macos:
     runs-on: macos-latest
@@ -135,10 +153,9 @@ jobs:
           errors=$(zsh -lic 'exit' 2>&1 >/dev/null) || true
           [ -z "$errors" ] || { echo "$errors"; exit 1; }
 
-      # node/npm are shell functions in .zshrc (lazy nvm). Functions are
-      # invisible to raw PATH lookups, so without .zshenv putting a real node
-      # on PATH, every non-interactive shell and `env node` shebang breaks.
-      # Skipped when nvm is absent — the runner may have no nvm install.
+      # .zshenv must put a real node on PATH: shell functions are invisible to
+      # raw PATH lookups, so `env node` shebangs and non-interactive shells
+      # need the binary itself. Skipped when nvm is absent.
       - name: node must work non-interactively
         run: |
           [ -r "$HOME/.nvm/alias/default" ] || { echo "no nvm — skipped"; exit 0; }
@@ -148,3 +165,22 @@ jobs:
           chmod +x /tmp/shebang.js
           zsh -c '/tmp/shebang.js' || {
             echo "env-node shebang failed"; exit 1; }
+
+      # node/npm/npx must stay plain binaries. Wrapping them in lazy-loading
+      # functions caused a recursion storm: when the helper went missing from
+      # a shell's environment, Homebrew's command_not_found_handler re-invoked
+      # the wrapper until FUNCNEST tripped, emitting ~700 errors per command.
+      - name: node must not be a shell function
+        run: |
+          [ -r "$HOME/.nvm/alias/default" ] || { echo "no nvm — skipped"; exit 0; }
+          for c in node npm npx; do
+            t=$(zsh -lic "type -w $c" 2>/dev/null | tail -1)
+            case "$t" in
+              *function*) echo "$c is a shell function: $t"; exit 1 ;;
+            esac
+          done
+          # A shell missing the loader must still run npm, not recurse.
+          out=$(zsh -lic 'unset -f _nvm_load 2>/dev/null; npm --version' 2>&1)
+          case "$out" in
+            *FUNCNEST*|*_nvm_load*) echo "recursion returned: $out"; exit 1 ;;
+          esac

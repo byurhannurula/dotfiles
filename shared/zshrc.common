@@ -58,33 +58,33 @@ setopt EXTENDED_HISTORY       # record timestamps
 
 setopt INTERACTIVE_COMMENTS   # allow # comments when typing interactively
 
-# ---- node (nvm, lazy) --------------------------------------------------------
-# Sourcing nvm.sh eagerly costs ~200ms on every shell. Instead, define stubs
-# that load nvm on first use, then hand off to the real command. The shell
-# starts fast and nvm still works the first time you type it.
+# ---- node (nvm) --------------------------------------------------------------
+# node, npm and npx are ordinary binaries in the version directory, so .zshenv
+# puts them on PATH and nothing here needs to wrap them. Only `nvm` itself is
+# a shell function (it edits PATH in the live shell), and sourcing nvm.sh to
+# get it costs ~0.9s — far too much to pay on every prompt.
 #
-# .nvmrc is honoured: the chpwd hook below runs `nvm use` on entering a
-# directory that has one, which is the behaviour the eager version gave.
+# So `nvm` alone is lazy. It unsets itself FIRST, so if nvm.sh ever fails to
+# source the name falls through to PATH instead of calling itself again. An
+# earlier version wrapped node/npm/npx the same way without the self-unset:
+# when the helper went missing, Homebrew's command_not_found_handler
+# re-invoked the wrapper and the shell spun until "maximum nested function
+# level reached; increase FUNCNEST?". Agent shells hit that constantly.
 export NVM_DIR="$HOME/.nvm"
 
-_nvm_load() {
-  unset -f nvm node npm npx 2>/dev/null
-  [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-  [ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion"
-}
 if [ -s "$NVM_DIR/nvm.sh" ]; then
-  nvm()  { _nvm_load; nvm "$@"; }
-  node() { _nvm_load; node "$@"; }
-  npm()  { _nvm_load; npm "$@"; }
-  npx()  { _nvm_load; npx "$@"; }
+  nvm() {
+    unset -f nvm 2>/dev/null
+    . "$NVM_DIR/nvm.sh"
+    [ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion"
+    nvm "$@"
+  }
 
-  # Auto-switch on cd into a directory with .nvmrc
+  # Auto-switch on cd into a directory with .nvmrc. Only pays the nvm.sh cost
+  # in projects that actually pin a version.
   _nvm_auto() {
-    if [ -f .nvmrc ]; then
-      _nvm_load 2>/dev/null
-      # --silent suppresses the success line but not the "Found .nvmrc" notice
-      nvm use --silent >/dev/null 2>&1
-    fi
+    [ -f .nvmrc ] || return 0
+    nvm use --silent >/dev/null 2>&1
   }
   autoload -Uz add-zsh-hook && add-zsh-hook chpwd _nvm_auto
   _nvm_auto        # honour .nvmrc if the shell starts inside a project
