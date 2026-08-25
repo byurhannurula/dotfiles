@@ -24,11 +24,17 @@ typeset -U path PATH fpath FPATH
 export ZSH="$HOME/.oh-my-zsh"
 ZSH_THEME="robbyrussell"
 
-# oh-my-zsh runs compinit, which stops to ask about group-writable completion
-# directories. With no terminal to ask on it aborts with "not interactive and
-# can't open terminal" and completion never loads -- CI runners and containers
-# hit this because their shared dirs are group-writable by default.
+# compinit stops to ask about group-writable completion directories. With no
+# terminal to ask on it aborts with "not interactive and can't open terminal"
+# and completion never loads. CI runners and containers hit this because their
+# shared dirs are group-writable, and Ubuntu's /etc/zsh/zshrc can reach compinit
+# before this file is read at all.
+#
+# ZSH_DISABLE_COMPFIX only covers oh-my-zsh's own call, so it is not enough on
+# its own: compaudit is stubbed to report nothing insecure, which leaves every
+# caller -- ours, oh-my-zsh's and the system's -- with nothing to prompt about.
 ZSH_DISABLE_COMPFIX=true
+compaudit() { : }
 
 # Bundled plugins need no install; the three custom ones are cloned into
 # ~/.oh-my-zsh/custom/plugins by the setup script.
@@ -48,7 +54,8 @@ if [ -r "$ZSH/oh-my-zsh.sh" ]; then
   source "$ZSH/oh-my-zsh.sh"
 else
   # Fresh machine: no framework yet. A bare prompt is fine; erroring is not.
-  autoload -Uz compinit && compinit -u
+  # -u accepts insecure directories instead of prompting about them.
+  autoload -Uz compinit && compinit -u -d "${ZSH_COMPDUMP:-$HOME/.zcompdump}"
   PS1='%n@%m %1~ %# '
 fi
 
