@@ -24,6 +24,12 @@ typeset -U path PATH fpath FPATH
 export ZSH="$HOME/.oh-my-zsh"
 ZSH_THEME="robbyrussell"
 
+# oh-my-zsh runs compinit, which stops to ask about group-writable completion
+# directories. With no terminal to ask on it aborts with "not interactive and
+# can't open terminal" and completion never loads -- CI runners and containers
+# hit this because their shared dirs are group-writable by default.
+ZSH_DISABLE_COMPFIX=true
+
 # Bundled plugins need no install; the three custom ones are cloned into
 # ~/.oh-my-zsh/custom/plugins by the setup script.
 plugins=(
@@ -92,5 +98,8 @@ fi
 
 # ---- shell integrations -----------------------------------------------------
 # Guarded so an absent tool does not error on every new shell.
-(( $+commands[fzf] )) && source <(fzf --zsh) 2>/dev/null
+# The redirect belongs INSIDE the substitution: `source <(cmd) 2>/dev/null`
+# silences source, not cmd, so an old fzf still prints "unknown option: --zsh"
+# to the terminal. --zsh arrived in fzf 0.48; Debian and Ubuntu ship older.
+(( $+commands[fzf] )) && source <(fzf --zsh 2>/dev/null)
 

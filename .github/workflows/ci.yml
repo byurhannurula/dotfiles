@@ -15,7 +15,11 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
+      # Full history: gitleaks scans commits, and the default shallow clone
+      # gives it nothing to read.
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: shellcheck
         run: |
@@ -31,10 +35,16 @@ jobs:
             [ -f "$f" ] && zsh -n "$f"
           done
 
+      # The binary rather than gitleaks-action: the action wraps the same scan
+      # in licence and SARIF-upload machinery that fails the job on its own
+      # errors ("stderr is not empty", 0 bytes scanned). This runs the same
+      # check as .githooks/pre-commit, so local and CI results agree.
       - name: gitleaks
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          V=8.30.1
+          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${V}/gitleaks_${V}_linux_x64.tar.gz" \
+            | tar -xz -C /tmp gitleaks
+          /tmp/gitleaks git --no-banner --redact .
 
   linux:
     runs-on: ubuntu-latest
