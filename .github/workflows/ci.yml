@@ -64,16 +64,21 @@ jobs:
         env:
           CI: 1
 
-      # Context for the assertion below. The runner's /usr/share/zsh dirs are
-      # group-writable, which is what made compinit prompt; keeping this here
-      # means a regression names its cause instead of needing to be inferred.
-      - name: shell startup diagnostics
-        if: always()
+      # The runner ships /usr/share/zsh group-writable, which a stock Ubuntu
+      # box does not (actions/runner-images#12526). Debian's /etc/zsh/zshrc
+      # calls a bare `compinit`, and bare compinit prompts about writable
+      # completion dirs -- with no terminal it aborts and unfunctions itself.
+      #
+      # Fixed here rather than in the shell config: only the -i flag suppresses
+      # that prompt, and nothing can pass a flag to a compinit call inside a
+      # system file. Working around it in .zshrc would mean weakening every
+      # machine to accommodate one broken runner, so the runner is corrected to
+      # match reality instead.
+      - name: normalize zsh completion dir permissions
         run: |
-          ls -la /etc/zsh/ 2>/dev/null || echo "no /etc/zsh"
-          echo "--- compaudit ---"
-          zsh -c 'autoload -Uz compaudit; compaudit' 2>&1 | head -10 \
-            || echo "(compaudit found nothing)"
+          sudo chown -R root:root /usr/share/zsh
+          sudo chmod -R g-w,o-w /usr/share/zsh
+          zsh -c 'autoload -Uz compaudit; compaudit' && echo "still insecure" || echo "clean"
 
       # Catches broken rc files nothing else surfaces: a login shell that
       # prints to stderr is a bug even when it exits 0.
