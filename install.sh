@@ -241,7 +241,6 @@ if ask "6/9  Install shell config (.zshrc, aliases, git)?"; then
   put "$OS/.zshrc"        "$HOME/.zshrc"
   put shared/.zprofile    "$HOME/.zprofile"
   put shared/.zshenv      "$HOME/.zshenv"
-  put shared/.profile     "$HOME/.profile"
   put shared/.gitconfig   "$HOME/.gitconfig"
   put shared/gitignore_global "$HOME/.gitignore-global"
 
@@ -262,8 +261,6 @@ if ask "7/9  Install app config (ghostty, vscode, zed, btop, obsidian)?"; then
     put macos/ghostty/config "$HOME/Library/Application Support/com.mitchellh.ghostty/config"
     V="$HOME/Library/Application Support/Code/User"
   else
-    put linux/ghostty/config "$HOME/.config/ghostty/config"
-
     # Natural scrolling has to be re-applied at every login: XFCE's own mouse
     # toggle reverts to libinput's per-device default otherwise.
     put linux/input/libinput-gestures.conf "$HOME/.config/libinput-gestures.conf"
