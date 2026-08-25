@@ -17,7 +17,7 @@ jobs:
     steps:
       # Full history: gitleaks scans commits, and the default shallow clone
       # gives it nothing to read.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -50,7 +50,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # -y accepts every group. Without a TTY the script declines everything,
       # so this also proves the non-interactive path works.
@@ -111,7 +111,7 @@ jobs:
       HOMEBREW_NO_ANALYTICS: 1
       HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # The runner ships these, and the Brewfile declares them as casks — brew
       # refuses to install over an existing app rather than clobbering it.
@@ -123,7 +123,7 @@ jobs:
       # breaks brew bundle with "File exists" / "No such keg".
       - name: cache homebrew downloads
         if: github.event_name != 'schedule'
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/Library/Caches/Homebrew
           key: brew-${{ hashFiles('macos/Brewfile') }}
