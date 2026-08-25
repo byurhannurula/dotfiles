@@ -1,6 +1,0 @@
-window-width=145
-window-height=45
-
-# Menlo is macOS-only. DejaVu Sans Mono ships with practically every
-# Debian/Ubuntu desktop, so it needs no extra package.
-font-family=DejaVu Sans Mono
