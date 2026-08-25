@@ -24,11 +24,6 @@ typeset -U path PATH fpath FPATH
 export ZSH="$HOME/.oh-my-zsh"
 ZSH_THEME="robbyrussell"
 
-# Skips oh-my-zsh's own insecure-directory check. The compaudit stub in
-# .zshenv is what actually prevents the prompt, since /etc/zsh/zshrc reaches
-# compinit before this file is read; this just avoids the redundant scan.
-ZSH_DISABLE_COMPFIX=true
-
 # Bundled plugins need no install; the three custom ones are cloned into
 # ~/.oh-my-zsh/custom/plugins by the setup script.
 plugins=(
@@ -47,8 +42,13 @@ if [ -r "$ZSH/oh-my-zsh.sh" ]; then
   source "$ZSH/oh-my-zsh.sh"
 else
   # Fresh machine: no framework yet. A bare prompt is fine; erroring is not.
-  # -u accepts insecure directories instead of prompting about them.
-  autoload -Uz compinit && compinit -u -d "${ZSH_COMPDUMP:-$HOME/.zcompdump}"
+  #
+  # -i, not bare and not -u. Bare compinit prompts when a completion directory
+  # is group- or world-writable, and with no terminal to prompt on it aborts
+  # and unfunctions itself, leaving no completion at all. -i drops those
+  # directories instead of asking; -u would load them unchecked, which is the
+  # one outcome actually worth avoiding.
+  autoload -Uz compinit && compinit -i
   PS1='%n@%m %1~ %# '
 fi
 

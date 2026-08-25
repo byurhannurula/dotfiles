@@ -41,18 +41,3 @@ fi
 # ---- rust -------------------------------------------------------------------
 # Also needed by non-interactive shells: cargo-installed binaries on PATH.
 [ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
-
-# ---- completion security ----------------------------------------------------
-# compinit stops to ask what to do about group-writable completion directories.
-# With no terminal to ask on it prints "not interactive and can't open terminal"
-# and aborts, leaving the shell without completion.
-#
-# This has to live in .zshenv, not .zshrc: zsh reads /etc/zsh/zshrc BEFORE
-# ~/.zshrc, and on Debian and Ubuntu that system file reaches compinit first,
-# so nothing set in .zshrc can prevent it. .zshenv is read before both.
-#
-# Stubbing compaudit to report nothing leaves every caller -- ours, oh-my-zsh's
-# and the system's -- with nothing to prompt about. The directories it objects
-# to (/usr/share/zsh, vendor-completions) are root-owned distro paths whose
-# group-writable bit is a packaging quirk, not a real exposure.
-compaudit() { : }
