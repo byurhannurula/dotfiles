@@ -64,14 +64,15 @@ jobs:
         env:
           CI: 1
 
-      # Runs before the assertion so a failure has context: which system rc
-      # files exist, and which directories compaudit objects to.
+      # Context for the assertion below. The runner's /usr/share/zsh dirs are
+      # group-writable, which is what made compinit prompt; keeping this here
+      # means a regression names its cause instead of needing to be inferred.
       - name: shell startup diagnostics
         if: always()
         run: |
           ls -la /etc/zsh/ 2>/dev/null || echo "no /etc/zsh"
           echo "--- compaudit ---"
-          zsh -c 'autoload -Uz compaudit; compaudit' 2>&1 | head -20 \
+          zsh -c 'autoload -Uz compaudit; compaudit' 2>&1 | head -10 \
             || echo "(compaudit found nothing)"
 
       # Catches broken rc files nothing else surfaces: a login shell that
