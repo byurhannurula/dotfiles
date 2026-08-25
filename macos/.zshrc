@@ -13,11 +13,15 @@
 # typeset -U keeps the array de-duplicated, so re-sourcing never stacks entries.
 typeset -U path PATH
 
+# PNPM_HOME is where pnpm keeps its global store; the executables it links for
+# `pnpm add -g` land in the bin/ subdirectory. Putting PNPM_HOME itself on PATH
+# finds nothing -- `pnpm setup` appends its own correct block to .zshrc when it
+# sees the bin dir missing, which is how this was caught.
 export PNPM_HOME="$HOME/Library/pnpm"
 
 path=(
   "$HOME/.local/bin"
-  "$PNPM_HOME"
+  "$PNPM_HOME/bin"
   "$HOME/.opencode/bin"
   /opt/homebrew/opt/ruby/bin       # keg-only: brew does not add this itself
   $path
