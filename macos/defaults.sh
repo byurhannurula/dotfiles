@@ -5,7 +5,7 @@
 #   ./macos/defaults.sh          # apply
 #   ./macos/defaults.sh --dry    # print what would change, touch nothing
 #
-# Values marked "captured" are read from bbn-mbp on 2026-08-22. The rest come
+# Values marked "captured" are read from the daily-driver Mac on 2026-08-22. The rest come
 # from the earlier WIP setup and are sensible defaults, not current state.
 #
 # Log out for the keyboard and trackpad settings to take effect.

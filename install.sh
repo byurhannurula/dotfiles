@@ -4,7 +4,7 @@
 #
 #   ./install.sh                    # ask before each group
 #   ./install.sh -y                 # accept everything
-#   ./install.sh --hostname bbn-mbp # set the hostname too
+#   ./install.sh --hostname my-mac  # set the hostname too
 #   ./install.sh status             # report only; changes nothing
 #
 # Copies, never symlinks: edits to ~ stay local until you copy them back.

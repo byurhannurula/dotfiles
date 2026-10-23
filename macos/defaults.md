@@ -1,6 +1,6 @@
 # macOS defaults
 
-Captured from bbn-mbp (macOS 26.6.1) on 2026-08-22. Only values that are
+Captured from the daily-driver Mac (macOS 26.6.1) on 2026-08-22. Only values that are
 actually set on this machine are listed as "current" — Dock and Finder are
 untouched stock defaults here, so there is nothing to restore for them.
 

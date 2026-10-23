@@ -36,7 +36,7 @@ _legacy/                the previous repo and every earlier .zshrc
 git clone <this repo> ~/dev/dotfiles && cd ~/dev/dotfiles
 ./install.sh                    # ask before each group
 ./install.sh -y                 # accept everything
-./install.sh --hostname bbn     # set the hostname non-interactively
+./install.sh --hostname my-mac  # set the hostname non-interactively
 ./install.sh status             # what this machine has vs the repo; read-only
 ```
 

@@ -2,7 +2,7 @@
 # Applied by macos/dock.sh. An app that is not installed is skipped rather
 # than left as a "?" placeholder tile.
 #
-# Captured from bbn-mbp on 2026-08-22.
+# Captured from the daily-driver Mac on 2026-08-22.
 
 /Applications/Brave Browser.app
 /Applications/Obsidian.app

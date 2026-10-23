@@ -4,7 +4,7 @@ The tools the shell config expects. Every alias in `shared/aliases.zsh` is
 guarded on the binary existing, so nothing breaks if you skip a line — the
 alias just does not appear.
 
-Installed on bbn-mbp today: `btop`, `ripgrep`, `jq` only. Everything else
+Installed on the daily-driver Mac then: `btop`, `ripgrep`, `jq` only. Everything else
 below is a gap.
 
 ## Core — the aliases in shared/aliases.zsh depend on these

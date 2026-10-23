@@ -1,7 +1,7 @@
 # =============================================================================
 # Brewfile — macOS packages.  Apply with:  brew bundle   (from the repo root)
 #
-# Captured from bbn-mbp on 2026-08-22, plus the shell tooling the aliases in
+# Captured from the daily-driver Mac on 2026-08-22, plus the shell tooling the aliases in
 # shared/aliases.zsh expect (see docs/packages.md).
 #
 # Work-safe base. Personal apps (chat, media, 3D printing, homelab hardware)
@@ -193,7 +193,7 @@ cask "yubico-authenticator"
 # Not installable by brew or mas — keep installing these by hand:
 #   Tailscale       installed via the App Store into a .localized folder,
 #                   so `--adopt` cannot match it; the cask is "tailscale-app"
-#   Whisper Lite    your own app (com.byrhn.whisperlite)
+#   Whisper Lite    your own app
 #   Screendrop      not in brew
 #   SafeNet         vendor download
 #   CuaDriver       installer script
