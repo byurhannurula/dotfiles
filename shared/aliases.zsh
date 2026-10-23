@@ -100,14 +100,9 @@ alias di="docker images"
 mkcd() { mkdir -p "$1" && cd "$1"; }
 
 # Serve the current directory over HTTP.  serve [port]
-serve() {
-  local port=${1:-8000}
-  if command -v npx >/dev/null 2>&1; then
-    npx --yes http-server -p "$port"
-  else
-    python3 -m http.server "$port"
-  fi
-}
+# python3 rather than `npx --yes http-server`, which fetched whatever version
+# was latest, with no prompt and no release cooldown.
+serve() { python3 -m http.server "${1:-8000}"; }
 
 # Kill processes by name.  killp node
 killp() {

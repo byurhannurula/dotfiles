@@ -153,6 +153,16 @@ setup_node() {
     && ok "node LTS is the default" || fail "fnm could not install node"
 }
 
+# npm's equivalent of pnpm's minimumReleaseAge, in days rather than minutes:
+# refuse versions published in the last 48h, which is when most worm-style
+# supply-chain attacks are caught and pulled. User-wide, so npx is covered.
+npm_cooldown() {
+  NPM="${FNM_DIR:-$HOME/.local/share/fnm}/aliases/default/bin/npm"
+  [ -x "$NPM" ] || return 0
+  [ "$("$NPM" config get min-release-age 2>/dev/null)" = null ] || return 0
+  "$NPM" config set min-release-age 2 --location=user && ok "npm release cooldown: 2 days"
+}
+
 # This is what the old nix-darwin config did and the first bash draft did not:
 # actually install the software. The Brewfile is generated from a capture, so
 # it reflects what the machine really had, not a guess.
@@ -182,6 +192,7 @@ if [ "$OS" = macos ] && ask "3/9  Install all packages and apps from Brewfile (s
       ok "personal apps"
     fi
     setup_node
+    npm_cooldown
   else
     fail "Homebrew still unavailable — skipping packages"
   fi
@@ -204,6 +215,7 @@ if [ "$OS" = linux ] && ask "3/9  Install packages from linux/packages.txt?"; th
       || fail "fnm install failed"
   fi
   setup_node
+  npm_cooldown
 fi
 
 # ---- dock -------------------------------------------------------------------
