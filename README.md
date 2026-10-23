@@ -7,6 +7,7 @@ gitignored.
 
 ```
 install.sh            the setup driver — asks before each group
+status.sh             read-only report: system, tools, node, drift
 Brewfile              macOS base: CLI, dev tools, work-safe apps
 Brewfile.personal     macOS extras: chat, media, 3D printing, homelab
 shared/               config identical on both machines
@@ -36,6 +37,7 @@ git clone <this repo> ~/dev/dotfiles && cd ~/dev/dotfiles
 ./install.sh                    # ask before each group
 ./install.sh -y                 # accept everything
 ./install.sh --hostname bbn     # set the hostname non-interactively
+./install.sh status             # what this machine has vs the repo; read-only
 ```
 
 Detects macOS or Linux from `uname` and picks the right files.

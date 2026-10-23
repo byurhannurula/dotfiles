@@ -24,7 +24,7 @@ jobs:
       - name: shellcheck
         run: |
           sudo apt-get update -qq && sudo apt-get install -y shellcheck
-          shellcheck -S warning install.sh macos/*.sh .githooks/pre-commit
+          shellcheck -S warning install.sh status.sh macos/*.sh .githooks/pre-commit
 
       - name: zsh syntax
         run: |
@@ -106,6 +106,9 @@ jobs:
           v=$(zsh -ic 'cd /tmp/proj && node --version' 2>/dev/null | tail -1)
           case "$v" in v22.*) echo "ok: $v" ;; *) echo "got: $v"; exit 1 ;; esac
 
+      - name: status report runs
+        run: ./install.sh status
+
   macos:
     runs-on: macos-latest
     timeout-minutes: 45
@@ -186,3 +189,6 @@ jobs:
           mkdir -p /tmp/proj && echo 22 > /tmp/proj/.nvmrc
           v=$(zsh -ic 'cd /tmp/proj && node --version' 2>/dev/null | tail -1)
           case "$v" in v22.*) echo "ok: $v" ;; *) echo "got: $v"; exit 1 ;; esac
+
+      - name: status report runs
+        run: ./install.sh status

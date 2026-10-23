@@ -5,6 +5,7 @@
 #   ./install.sh                    # ask before each group
 #   ./install.sh -y                 # accept everything
 #   ./install.sh --hostname bbn-mbp # set the hostname too
+#   ./install.sh status             # report only; changes nothing
 #
 # Copies, never symlinks: edits to ~ stay local until you copy them back.
 # Anything replaced is kept in ~/.dotfiles.backup/<timestamp>/.
@@ -36,9 +37,10 @@ INTERACTIVE=0
 IS_CI="${CI:-}"
 while [ $# -gt 0 ]; do
   case "$1" in
+    status)     exec ./status.sh ;;
     -y|--yes)   YES=1; shift ;;
     --hostname) HOSTNAME_NEW="${2:?--hostname needs a name}"; shift 2 ;;
-    -h|--help)  sed -n '3,12p' "$0"; exit 0 ;;
+    -h|--help)  sed -n '3,13p' "$0"; exit 0 ;;
     *) echo "unknown option: $1" >&2; exit 1 ;;
   esac
 done
