@@ -46,7 +46,7 @@ done
 BACKUP="$HOME/.dotfiles.backup/$(date +%Y%m%d_%H%M%S)"
 
 # Obsidian keeps its config inside the vault. Override if yours lives elsewhere.
-OBSIDIAN_VAULT="${OBSIDIAN_VAULT:-$HOME/Documents/obsidian-bbn}"
+OBSIDIAN_VAULT="${OBSIDIAN_VAULT:-$HOME/Documents/obsidian/bbn}"
 
 ask() {
   [ "$YES" -eq 1 ] && return 0

@@ -337,7 +337,7 @@ with their public IDs — verify with `mas search <name>` before relying on them
 ## Obsidian
 
 Settings live inside the vault, not `~/Library`, so they install into
-`$OBSIDIAN_VAULT` (default `~/Documents/obsidian-bbn`, overridable).
+`$OBSIDIAN_VAULT` (default `~/Documents/obsidian/bbn`, overridable).
 
 Tracked: appearance, hotkeys, graph, daily-notes, templates, the two plugin
 lists, three CSS snippets, and the `mnml` theme manifest — 48K.
