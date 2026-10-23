@@ -173,6 +173,23 @@ if [ "$OS" = linux ] && ask "3/9  Install packages from linux/packages.txt?"; th
   else
     warn "linux/packages.txt not found"
   fi
+
+  # Not in apt. --skip-shell: the shell hook already lives in zshrc.common.
+  if [ ! -x "$HOME/.local/share/fnm/fnm" ] && ! command -v fnm >/dev/null 2>&1; then
+    say "installing fnm"
+    curl -fsSL https://fnm.vercel.app/install | bash -s -- --skip-shell >/dev/null \
+      || warn "fnm install failed"
+  fi
+fi
+
+# ---- node -------------------------------------------------------------------
+# fnm starts with no Node at all. The LTS becomes the default that scripts and
+# shells outside a project get; projects pick their own through .nvmrc.
+FNM=$(command -v fnm 2>/dev/null || echo "$HOME/.local/share/fnm/fnm")
+if [ -x "$FNM" ] && [ ! -e "$HOME/.local/share/fnm/aliases/default" ]; then
+  say "installing node LTS with fnm"
+  "$FNM" install --lts >/dev/null 2>&1 && "$FNM" default lts-latest \
+    && ok "node LTS is the default" || warn "fnm could not install node"
 fi
 
 # ---- dock -------------------------------------------------------------------

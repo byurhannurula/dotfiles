@@ -84,10 +84,18 @@ uncomment, run `brew bundle`, and it activates on the next shell.
 
 ### Node
 
-`nvm`, loaded lazily: `nvm`, `node`, `npm` and `npx` are stub functions that
-load the real thing on first use, so the shell starts in ~0.3s rather than
-~1.4s. `.nvmrc` is honoured — `cd` into a project and it switches version
-silently.
+[`fnm`](https://github.com/Schniz/fnm). It reads `.nvmrc`: `cd` into a project
+and it switches version, `cd` out and it returns to the default. The installer
+sets the current LTS as the default.
+
+```bash
+fnm install 22        # add a version
+fnm default 24        # what scripts and non-project shells use
+fnm ls                # what is installed
+```
+
+It replaced nvm, which had to source `nvm.sh` (~1s) for every shell opened
+inside a project. fnm does the same switch in a few ms.
 
 `mise` is deliberately not used. Its value is managing Python/Go/Ruby alongside
 Node, and this is a Node-only machine.

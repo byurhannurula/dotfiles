@@ -8,35 +8,23 @@
 # Keep it small: it runs on every single shell invocation.
 # =============================================================================
 
-# ---- node -------------------------------------------------------------------
-# The lazy nvm loader in zshrc.common defines node/npm/npx as shell functions.
-# Functions are invisible to anything doing a raw PATH lookup, which breaks two
-# things a stub cannot reach:
+# ---- node (fnm) --------------------------------------------------------------
+# Non-interactive shells never read .zshrc, so cron, git hooks, CI, agent
+# shells and `#!/usr/bin/env node` shebangs only see what is set here.
 #
-#   1. Non-interactive shells never read .zshrc, so `zsh -c 'node …'` fails
-#      outright — cron, git hooks, CI, agent shells.
-#   2. `#!/usr/bin/env node` shebangs. env searches PATH and cannot see a
-#      function, so Homebrew's pnpm dies with "env: node: No such file".
+# fnm keeps the default version behind a stable symlink, so a plain PATH entry
+# is enough: no subprocess, no version lookup. Interactive shells then run
+# `fnm env` in zshrc.common, which puts the per-shell .nvmrc version first.
 #
-# Putting the default version's bin on PATH here fixes both. Interactive shells
-# still get the stubs from .zshrc, which override this and keep .nvmrc
-# switching working.
+# Prepended so it beats Homebrew's `node`, which brew installs as a dependency
+# of other formulae (agent-browser) and would otherwise win for every script.
 #
-# The version is read from nvm's own default alias so `nvm alias default 20`
-# takes effect everywhere without editing this file. The alias holds a partial
-# version ("24.15"), hence the glob to resolve it to a real directory.
-#
-# Appended, not prepended: nvm ships a corepack pnpm, and Homebrew ships its
-# own. Putting nvm last lets brew's win wherever brew is on PATH, so scripts
-# and terminals run the same pnpm instead of two different versions.
-export NVM_DIR="$HOME/.nvm"
-if [ -r "$NVM_DIR/alias/default" ]; then
-  read -r _nvm_default < "$NVM_DIR/alias/default"
-  for _nvm_bin in "$NVM_DIR/versions/node/v${_nvm_default}"*/bin(N); do
-    [ -d "$_nvm_bin" ] && PATH="$PATH:$_nvm_bin" && break
-  done
-  unset _nvm_default _nvm_bin
-fi
+# The fnm binary itself sits in its data dir when installed by fnm's own
+# script (Linux); Homebrew puts it in /opt/homebrew/bin instead.
+typeset -U path PATH     # nested shells re-read this file; keep PATH unique
+export FNM_DIR="${FNM_DIR:-$HOME/.local/share/fnm}"
+[ -x "$FNM_DIR/fnm" ] && path=("$FNM_DIR" $path)
+[ -d "$FNM_DIR/aliases/default/bin" ] && path=("$FNM_DIR/aliases/default/bin" $path)
 
 # ---- rust -------------------------------------------------------------------
 # Also needed by non-interactive shells: cargo-installed binaries on PATH.

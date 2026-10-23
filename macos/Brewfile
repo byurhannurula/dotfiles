@@ -80,6 +80,7 @@ brew "dockutil"         # sets Dock contents; see macos/dock.sh
 # ---- languages and build ----------------------------------------------------
 brew "cmake"
 brew "python@3.11"
+brew "fnm"              # node versions; reads .nvmrc
 brew "pnpm"
 brew "openssl@1.1"
 brew "argon2"
