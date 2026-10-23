@@ -7,13 +7,24 @@
 // custom settings, run `zed: open default settings` from the
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
+  "toolbar": {
+    "agent_review": true
+  },
+  "agent": {
+    "limit_content_width": true,
+    "default_width": 630.0,
+    "flexible": true,
+    "button": false,
+    "favorite_models": [],
+    "model_parameters": []
+  },
   "icon_theme": {
     "mode": "dark",
     "light": "Zed (Default)",
-    "dark": "Zed (Default)"
+    "dark": "VSCode Icons for Zed (Dark Official Icons)"
   },
   "telemetry": {
-    "diagnostics": true,
+    "diagnostics": false,
     "metrics": false,
     "anthropic_retention": false
   },
@@ -41,11 +52,10 @@
     "show": "never"
   },
   "autosave": "on_focus_change",
-  "buffer_font_fallbacks": [
-    "Victor Mono",
-    "monospace"
-  ],
+  "buffer_font_fallbacks": ["Menlo"],
   "buffer_font_family": "Menlo",
+  "ui_font_size": 16,
+  "buffer_font_size": 13.5,
   "file_types": {
     "html": [
       "*.html"
@@ -65,16 +75,25 @@
   "soft_wrap": "editor_width",
   "tab_size": 2,
   "agent_servers": {
+    "opencode": {
+      "type": "registry"
+    },
     "claude-acp": {
+      "favorite_config_option_values": {
+        "model": [
+          "opus",
+          "sonnet"
+        ]
+      },
       "type": "registry"
     }
   },
   "base_keymap": "VSCode",
-  "ui_font_size": 16,
-  "buffer_font_size": 13.0,
+
   "theme": {
-    "mode": "dark",
+    "mode": "system",
     "light": "Ayu Light",
-    "dark": "Ayu Dark",
+    "dark": "VSCode Dark Modern",
   },
+  "gutter":{ "min_line_number_digits": 0 }
 }
