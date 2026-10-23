@@ -22,9 +22,21 @@
 # The fnm binary itself sits in its data dir when installed by fnm's own
 # script (Linux); Homebrew puts it in /opt/homebrew/bin instead.
 typeset -U path PATH     # nested shells re-read this file; keep PATH unique
+
+# Homebrew for non-login shells (cron, hooks, GUI-launched editors), which
+# never read .zprofile. Only when absent: prepending again would push brew
+# ahead of a node version a parent shell already chose.
+(( ${path[(Ie)/opt/homebrew/bin]} )) || [ ! -d /opt/homebrew/bin ] \
+  || path=(/opt/homebrew/bin /opt/homebrew/sbin $path)
+
 export FNM_DIR="${FNM_DIR:-$HOME/.local/share/fnm}"
 [ -x "$FNM_DIR/fnm" ] && path=("$FNM_DIR" $path)
-[ -d "$FNM_DIR/aliases/default/bin" ] && path=("$FNM_DIR/aliases/default/bin" $path)
+
+# Set by `fnm env` in a parent shell that already picked the .nvmrc version;
+# the default would override it in every child `zsh -c` (npm scripts, hooks).
+if [[ -z ${FNM_MULTISHELL_PATH-} && -d $FNM_DIR/aliases/default/bin ]]; then
+  path=("$FNM_DIR/aliases/default/bin" $path)
+fi
 
 # ---- rust -------------------------------------------------------------------
 # Also needed by non-interactive shells: cargo-installed binaries on PATH.
