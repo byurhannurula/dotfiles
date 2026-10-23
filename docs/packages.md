@@ -22,12 +22,12 @@ below is a gap.
 | ripgrep | `grep` | `ripgrep` | `ripgrep` |
 | tldr | `man` | `tldr` | `tldr` |
 
-The set actually adopted is in `macos/Brewfile`: **eza, bat, fzf, ripgrep,
+The set actually adopted is in `Brewfile`: **eza, bat, fzf, ripgrep,
 jq, gh**. The rest are listed there commented out — uncomment to adopt one,
 and its alias appears on the next shell.
 
 ```bash
-brew bundle --file=macos/Brewfile
+brew bundle --file=Brewfile
 ```
 
 ## Shell integrations — wired up in shared/zshrc.common

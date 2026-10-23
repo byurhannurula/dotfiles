@@ -7,6 +7,8 @@ gitignored.
 
 ```
 install.sh            the setup driver — asks before each group
+Brewfile              macOS base: CLI, dev tools, work-safe apps
+Brewfile.personal     macOS extras: chat, media, 3D printing, homelab
 shared/               config identical on both machines
   zshrc.common          shell core: oh-my-zsh, history, options, integrations
   aliases.zsh           aliases and functions, portable
@@ -15,8 +17,6 @@ shared/               config identical on both machines
 macos/
   .zshrc                PATH and Homebrew; sources zshrc.common
   aliases.macos.zsh     defaults, lsof, brew, Rosetta
-  Brewfile              work-safe base: CLI, dev tools, apps
-  Brewfile.personal     chat, media, 3D printing, homelab hardware
   defaults.sh           system preferences
   ghostty/ vscode/ zed/ btop/
 linux/
@@ -133,7 +133,7 @@ is stored in this repo.
 
 ### Personal apps
 
-`macos/Brewfile.personal`, asked about separately so a work Mac can skip it.
+`Brewfile.personal`, asked about separately so a work Mac can skip it.
 
 | Group | Apps |
 |---|---|
@@ -414,8 +414,24 @@ both of which carry live credentials.
 ./install.sh                    # re-run any group after editing a file
 git config core.hooksPath .githooks        # enable the secret scan once per clone
 ./macos/defaults.sh --dry       # preview system preference changes
-brew bundle --file=macos/Brewfile          # packages only
-brew bundle cleanup --file=macos/Brewfile  # what is installed but undeclared
+brew bundle                     # install what Brewfile lists
+brew bundle --file=Brewfile.personal
+```
+
+### Turning apps on and off
+
+Both Brewfiles sit in the repo root. Put `#` in front of a line to turn it
+off, remove the `#` to turn it on, then:
+
+```bash
+git pull && brew bundle         # add Brewfile.personal the same way if used
+```
+
+Commenting a line out stops future installs; it does not uninstall. To see
+what is installed but no longer listed, check both files together:
+
+```bash
+cat Brewfile Brewfile.personal | brew bundle cleanup --file=-
 ```
 
 To update the repo from the machine, copy the file back and commit — the

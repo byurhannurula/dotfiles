@@ -129,11 +129,13 @@ jobs:
         uses: actions/cache@v6
         with:
           path: ~/Library/Caches/Homebrew
-          key: brew-${{ hashFiles('macos/Brewfile') }}
+          key: brew-${{ hashFiles('Brewfile') }}
           restore-keys: brew-
 
       - name: Brewfile parses
-        run: brew bundle list --file=macos/Brewfile >/dev/null
+        run: |
+          brew bundle list --file=Brewfile >/dev/null
+          brew bundle list --file=Brewfile.personal >/dev/null
 
       # Never applies anything: --dry only reads and reports drift. Applying
       # real defaults on a runner proves nothing and risks the rest of the job.
@@ -148,7 +150,7 @@ jobs:
       # worth proving.
       - name: install (formulae only, no casks)
         run: |
-          grep -v '^cask ' macos/Brewfile > /tmp/Brewfile.nocask
+          grep -v '^cask ' Brewfile > /tmp/Brewfile.nocask
           brew bundle --file=/tmp/Brewfile.nocask || true
           ./install.sh -y
         env:

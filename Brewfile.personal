@@ -1,7 +1,7 @@
 # =============================================================================
 # Brewfile.personal — apps for a personal Mac only.
 #
-# Apply on top of the base:  brew bundle --file=macos/Brewfile.personal
+# Apply on top of the base:  brew bundle --file=Brewfile.personal
 # install.sh asks about this file after the base Brewfile, default no.
 # =============================================================================
 

@@ -1,5 +1,5 @@
 # =============================================================================
-# Brewfile — macOS packages.  Apply with:  brew bundle --file=macos/Brewfile
+# Brewfile — macOS packages.  Apply with:  brew bundle   (from the repo root)
 #
 # Captured from bbn-mbp on 2026-08-22, plus the shell tooling the aliases in
 # shared/aliases.zsh expect (see docs/packages.md).

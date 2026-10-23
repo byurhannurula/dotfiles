@@ -149,7 +149,7 @@ setup_node() {
 # This is what the old nix-darwin config did and the first bash draft did not:
 # actually install the software. The Brewfile is generated from a capture, so
 # it reflects what the machine really had, not a guess.
-if [ "$OS" = macos ] && ask "3/9  Install all packages and apps from macos/Brewfile (slow)?"; then
+if [ "$OS" = macos ] && ask "3/9  Install all packages and apps from Brewfile (slow)?"; then
   # Nothing else can bootstrap Homebrew, and everything below depends on it.
   if ! command -v brew >/dev/null 2>&1; then
     say "installing Homebrew"
@@ -162,12 +162,13 @@ if [ "$OS" = macos ] && ask "3/9  Install all packages and apps from macos/Brewf
   if command -v brew >/dev/null 2>&1; then
     # Third-party tap trust is declared per entry in the Brewfile.
     say "brew bundle — this takes a while"
-    brew bundle --file=macos/Brewfile || warn "some packages failed; see above"
+    # HOMEBREW_BUNDLE_FILE lets CI swap in a cask-free copy.
+    brew bundle --file="${HOMEBREW_BUNDLE_FILE:-Brewfile}" || warn "some packages failed; see above"
     ok "packages"
 
     # Asked separately so a work Mac gets the base alone. -y still accepts it.
-    if [ -z "$IS_CI" ] && ask "     Also install personal apps from macos/Brewfile.personal?"; then
-      brew bundle --file=macos/Brewfile.personal || warn "some personal apps failed"
+    if [ -z "$IS_CI" ] && ask "     Also install personal apps from Brewfile.personal?"; then
+      brew bundle --file=Brewfile.personal || warn "some personal apps failed"
       ok "personal apps"
     fi
     setup_node
