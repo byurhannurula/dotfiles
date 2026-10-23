@@ -21,37 +21,38 @@ alias config='$EDITOR ~/.zshrc'
 alias reload="exec zsh"
 alias myip='curl -s https://ifconfig.me && echo'   # same on both OSes
 
-# ---- safety -----------------------------------------------------------------
-# -i prompts before clobbering. Muscle memory is worth less than a lost file.
-alias cp="cp -i"
-alias mv="mv -i"
-alias mkdir="mkdir -pv"
-alias ping="ping -c 5"
-
-# ---- modern replacements ----------------------------------------------------
-# Same set on every machine. Each guarded on the binary being present.
+# ---- new names --------------------------------------------------------------
+# Safe everywhere: these names do not exist as real commands.
 if (( $+commands[eza] )); then
-  alias ls='eza --icons --group-directories-first'
   alias ll='eza --icons --group-directories-first -l'
   alias la='eza --icons --group-directories-first -a'
   alias l='eza --icons --group-directories-first -la'
-  alias tree='eza --tree --icons'
 else
   alias ll='ls -l'
   alias la='ls -a'
   alias l='ls -la'
 fi
 
-if (( $+commands[bat] )); then
-  alias cat='bat --paging=never'
-  alias batp='bat --paging=always'    # when you do want the pager
-elif (( $+commands[batcat] )); then   # Debian/Ubuntu renames the binary
-  alias cat='batcat --paging=never'
-  alias batp='batcat --paging=always'
-fi
+bat=${commands[bat]:-${commands[batcat]}}   # Debian/Ubuntu renames it batcat
+[ -n "$bat" ] && alias batp="${bat:t} --paging=always"
 
-(( $+commands[btop] )) && alias top='btop'
-(( $+commands[rg]   )) && alias grep='rg'
+# ---- core commands, for a person at a terminal only -------------------------
+# These change what real commands do: cp/mv prompt (and fail without a
+# terminal), eza and bat reject flags like `ls -ltr` and `cat -v`. Claude
+# Code copies interactive aliases into every command it runs, so they would
+# break agents and pasted scripts. No grep=rg at all: rg -r means --replace,
+# so `grep -r foo .` silently printed wrong output.
+if [[ -t 0 && -t 1 && -z ${CLAUDECODE-}${CI-} ]]; then
+  alias cp="cp -i"      # prompt before clobbering
+  alias mv="mv -i"
+  alias mkdir="mkdir -pv"
+  alias ping="ping -c 5"
+  (( $+commands[eza]  )) && alias ls='eza --icons --group-directories-first' \
+                         && alias tree='eza --tree --icons'
+  [ -n "$bat" ]          && alias cat="${bat:t} --paging=never"
+  (( $+commands[btop] )) && alias top='btop'
+fi
+unset bat
 
 # ---- git --------------------------------------------------------------------
 alias gst="git status"

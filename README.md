@@ -81,6 +81,12 @@ Installed: `eza` (ls) `bat` (cat) `btop` (top) `ripgrep` (grep) `fzf` `jq` `gh`
 Every alias is guarded on the binary existing, so a missing tool leaves the
 plain command alone — the same file works on a machine that has none of them.
 
+Aliases that change a real command (`ls`→eza, `cat`→bat, `cp -i`, …) apply only
+when a person is at a terminal. Scripts, CI and AI agents get the plain
+commands, because eza and bat reject flags like `ls -ltr` and `cat -v`, and
+`cp -i` fails with no terminal. `rg` is not aliased to `grep`: `rg -r` means
+`--replace`.
+
 Six more are listed commented in the Brewfile: `git-delta`, `fd`, `zoxide`,
 `direnv`, `lazygit`, `trash`. Each already has a guarded alias or hook waiting;
 uncomment, run `brew bundle`, and it activates on the next shell.
