@@ -127,7 +127,7 @@ is stored in this repo.
 | Browsers | Brave, Chrome, Firefox, Helium |
 | Editors | VS Code, Zed, Ghostty, JetBrains Mono |
 | Dev | OrbStack, TablePlus, MongoDB Compass, DBeaver, Cyberduck, ngrok, Android platform tools, Temurin 8/17/latest, tflint |
-| Productivity | Raycast, Obsidian, Raindrop, Paseo, Tiles, HiddenBar, Thaw, AltTab, Marta, AppCleaner, The Unarchiver, drawio, Jotter |
+| Productivity | Raycast, Obsidian, Raindrop, Paseo, Tiles, HiddenBar, AltTab, Marta, AppCleaner, The Unarchiver, drawio, Jotter |
 | Media | VLC |
 | System | BetterDisplay, MonitorControl, Stats, coconutBattery, Flux, YubiKey Authenticator |
 

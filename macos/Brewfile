@@ -165,7 +165,7 @@ cask "hiddenbar"
 cask "appcleaner"
 cask "the-unarchiver"
 cask "alt-tab"                # per-window cmd-tab
-cask "thaw"                   # menu bar manager
+# cask "thaw"                 # menu bar manager; tried, not kept
 cask "marta"                  # two-pane file manager
 
 # media
