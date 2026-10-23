@@ -15,7 +15,8 @@ shared/               config identical on both machines
 macos/
   .zshrc                PATH and Homebrew; sources zshrc.common
   aliases.macos.zsh     defaults, lsof, brew, Rosetta
-  Brewfile              41 formulae, 51 casks, 10 taps
+  Brewfile              work-safe base: CLI, dev tools, apps
+  Brewfile.personal     chat, media, 3D printing, homelab hardware
   defaults.sh           system preferences
   ghostty/ vscode/ zed/ btop/
 linux/
@@ -51,7 +52,7 @@ Order matters on a fresh machine — each step depends on the ones before.
 |---|---|---|---|
 | 1 | macOS defaults | Finder, Dock, pointer, text input, screenshots | fast |
 | 2 | hostname | all three macOS names, or `hostnamectl` | fast |
-| 3 | packages | everything from the Brewfile / packages.txt | **20–40 min** |
+| 3 | packages | the Brewfile / packages.txt, then optionally Brewfile.personal | **20–40 min** |
 | 4 | Dock contents | the apps in `macos/dock.txt`, in order | fast |
 | 5 | oh-my-zsh | the framework plus 3 plugins, optional `chsh` | ~1 min |
 | 6 | shell config | `.zshrc`, `.zshrc.common`, aliases, git | fast |
@@ -112,26 +113,34 @@ is stored in this repo.
 
 | Group | Packages |
 |---|---|
-| Core | git, tree, wget, parallel, shellcheck, gitleaks, xmlstarlet, mas |
-| Build | cmake, python@3.11, pnpm, openssl@1.1, argon2 |
+| Core | git, tree, wget, parallel, shellcheck, gitleaks, xmlstarlet, mas, dockutil, agent-browser, ansible |
+| Build | cmake, python@3.11, fnm, go, deno, pnpm, argon2 |
 | Mobile | cocoapods, fvm, gradle |
-| Cloud | podman, azure-cli, cloudflared, terraform |
+| Cloud | podman, azure-cli, cloudflared, terraform, stripe |
 | Media | ffmpeg, graphicsmagick, poppler |
-| Hardware | hidapi, minicom, nut, smartmontools, telnet |
-| Misc | redis, watchman, mprocs, mole, lazyssh, otel-gui |
+| Misc | redis, watchman, mprocs, mole, otel-gui |
 
 ### Apps
 
 | Group | Apps |
 |---|---|
-| Browsers | Brave, Chrome, Firefox |
-| Editors | VS Code, Zed, Ghostty |
-| Dev | OrbStack, TablePlus, MongoDB Compass, Cyberduck, ngrok, Android platform tools, Temurin 8/17/latest, tflint |
+| Browsers | Brave, Chrome, Firefox, Helium |
+| Editors | VS Code, Zed, Ghostty, JetBrains Mono |
+| Dev | OrbStack, TablePlus, MongoDB Compass, DBeaver, Cyberduck, ngrok, Android platform tools, Temurin 8/17/latest, tflint |
+| Productivity | Raycast, Obsidian, Raindrop, Paseo, Tiles, HiddenBar, Thaw, AltTab, Marta, AppCleaner, The Unarchiver, drawio, Jotter |
+| Media | VLC |
+| System | BetterDisplay, MonitorControl, Stats, coconutBattery, Flux, YubiKey Authenticator |
+
+### Personal apps
+
+`macos/Brewfile.personal`, asked about separately so a work Mac can skip it.
+
+| Group | Apps |
+|---|---|
 | Comms | Discord, Telegram, Viber |
-| Productivity | Raycast, Obsidian, Raindrop, Paseo, Tiles, HiddenBar, AppCleaner, The Unarchiver, drawio, Jotter |
-| Media | VLC, calibre, Transmission, IPTVnator |
-| Hardware | BambuStudio, OrcaSlicer, RPi Imager, balenaEtcher, Silicon Labs VCP driver |
-| System | BetterDisplay, MonitorControl, Stats, coconutBattery, Flux, AnyDesk, Home Assistant, YubiKey Authenticator |
+| Media | IPTVnator, calibre, Transmission, Tinycast, yt-dlp |
+| 3D and imaging | BambuStudio, OrcaSlicer, OpenSCAD, RPi Imager, balenaEtcher |
+| Homelab | hidapi, minicom, nut, smartmontools, telnet, Home Assistant, AnyDesk, Firebird |
 
 ### Linux
 

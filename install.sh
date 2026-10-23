@@ -153,6 +153,12 @@ if [ "$OS" = macos ] && ask "3/9  Install all packages and apps from macos/Brewf
     say "brew bundle — this takes a while"
     brew bundle --file=macos/Brewfile || warn "some packages failed; see above"
     ok "packages"
+
+    # Asked separately so a work Mac gets the base alone. -y still accepts it.
+    if [ -z "$IS_CI" ] && ask "     Also install personal apps from macos/Brewfile.personal?"; then
+      brew bundle --file=macos/Brewfile.personal || warn "some personal apps failed"
+      ok "personal apps"
+    fi
   else
     warn "Homebrew still unavailable — skipping packages"
   fi
