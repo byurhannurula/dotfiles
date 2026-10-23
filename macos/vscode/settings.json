@@ -1,6 +1,6 @@
 {
   // EDITOR
-  "editor.fontFamily": "Menlo, Victor Mono, monospace",
+  "editor.fontFamily": "JetBrains Mono, Menlo, Victor Mono, monospace",
   "editor.fontLigatures": false,
   "editor.lineHeight": 20,
   "editor.fontSize": 13,
@@ -63,7 +63,7 @@
     "**/.next": true,
     "**/.svn": true,
     "**/bower_components": true,
-    "**/node_modules": true
+    "**/node_modules": true,
   },
   "editor.quickSuggestions": {
     "strings": true,
@@ -112,52 +112,29 @@
   "terminal.integrated.initialHint": false,
   "workbench.browser.openLocalhostLinks": false,
   "workbench.editorAssociations": {
-    "*.drawio": "default"
+    "*.drawio": "default",
   },
   "hediet.vscode-drawio.resizeImages": null,
-  "sshfs.configs": [
-    {
-      "group": "homelab",
-      "name": "dns",
-      "label": "dns",
-      "host": "10.96.3.101",
-      "port": 22,
-      "username": "bbn",
-      "privateKeyPath": "/Users/byrhn/.ssh/id_ed25519",
-      "root": "/opt",
-      "password": "REMOVED"
-    },
-    {
-      "group": "homelab",
-      "name": "tailscale",
-      "label": "tailscale",
-      "host": "10.96.3.102",
-      "port": 22,
-      "username": "bbn",
-      "privateKeyPath": "/Users/byrhn/.ssh/id_ed25519",
-      "root": "/opt",
-      "password": "REMOVED"
-    },
-    {
-      "group": "homelab",
-      "name": "edge",
-      "label": "edge",
-      "host": "10.96.3.103",
-      "port": 22,
-      "username": "bbn",
-      "privateKeyPath": "/Users/byrhn/.ssh/id_ed25519",
-      "root": "/opt",
-      "password": "REMOVED"
-    },
-    {
-      "group": "homelab",
-      "name": "auth",
-      "label": "auth",
-      "host": "10.96.3.104",
-      "port": 22,
-      "username": "bbn",
-      "privateKeyPath": "/Users/byrhn/.ssh/id_ed25519",
-      "root": "/opt"
-    }
-  ],
+  "workbench.startupEditor": "none",
+  "explorer.confirmPasteNative": false,
+  "accessibility.signals.terminalCommandSucceeded": {
+    "sound": "off",
+    "announcement": "off"
+  },
+  "accessibility.signals.terminalCommandFailed": {
+    "sound": "off"
+  },
+  "accessibility.signals.terminalBell": {
+    "sound": "off",
+    "announcement": "off"
+  },
+  "accessibility.signals.clear": {
+    "sound": "off",
+    "announcement": "off"
+  },
+  "accessibility.signals.terminalQuickFix": {
+    "sound": "off",
+    "announcement": "off"
+  },
+  "diffEditor.renderSideBySide": false,
 }

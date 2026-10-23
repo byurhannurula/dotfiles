@@ -12,7 +12,6 @@ hediet.vscode-drawio
 humao.rest-client
 janisdd.vscode-edit-csv
 kamikillerto.vscode-colorize
-kelvin.vscode-sshfs
 pflannery.vscode-versionlens
 wayou.vscode-todo-highlight
 yoavbls.pretty-ts-errors
