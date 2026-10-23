@@ -392,7 +392,8 @@
       "Bash(gh api * --raw-field*)",
       "Bash(gh api * --input*)"
     ],
-    "defaultMode": "acceptEdits"
+    "defaultMode": "acceptEdits",
+    "disableBypassPermissionsMode": "disable"
   },
   "model": "opus",
   "workflowKeywordTriggerEnabled": false,
