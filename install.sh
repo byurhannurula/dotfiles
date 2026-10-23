@@ -18,6 +18,8 @@ cd "$(dirname "$0")" || exit 1
 say()  { printf '\033[0;34m→\033[0m %s\n' "$1"; }
 ok()   { printf '\033[0;32m✓\033[0m %s\n' "$1"; }
 warn() { printf '\033[0;33m!\033[0m %s\n' "$1"; }
+fail() { printf '\033[0;31m✗\033[0m %s\n' "$1"; FAILED=1; }
+FAILED=0
 
 case "$(uname -s)" in
   Darwin) OS=macos ;;
@@ -62,12 +64,15 @@ ask() {
 put() {
   src=$1; dest=$2
   [ -f "$src" ] || return 0
-  if [ -e "$dest" ]; then
+  if [ -e "$dest" ] || [ -L "$dest" ]; then
     mkdir -p "$BACKUP/$(dirname "${dest#$HOME/}")"
-    cp "$dest" "$BACKUP/${dest#$HOME/}" 2>/dev/null
+    cp "$dest" "$BACKUP/${dest#$HOME/}" 2>/dev/null \
+      || { fail "could not back up ${dest#$HOME/} — left unchanged"; return 1; }
+    # cp follows a symlink and would overwrite its target (a stow repo, say).
+    [ -L "$dest" ] && rm -f "$dest"
   fi
   mkdir -p "$(dirname "$dest")"
-  cp "$src" "$dest" && printf '    %s\n' "${dest#$HOME/}"
+  cp "$src" "$dest" && printf '    %s\n' "${dest#$HOME/}" || fail "could not write ${dest#$HOME/}"
 }
 
 # ---- preflight --------------------------------------------------------------
@@ -122,7 +127,7 @@ if [ -n "$HOSTNAME_NEW" ]; then
   case "$HOSTNAME_NEW" in
     "$current") say "hostname unchanged" ;;
     *[!a-zA-Z0-9-]*|-*|"")
-      warn "not a valid hostname: '$HOSTNAME_NEW' — skipped" ;;
+      fail "not a valid hostname: '$HOSTNAME_NEW' — skipped" ;;
     *)
       if [ "$OS" = macos ]; then
         sudo scutil --set HostName      "$HOSTNAME_NEW"
@@ -145,7 +150,7 @@ setup_node() {
   [ -e "$HOME/.local/share/fnm/aliases/default" ] && return 0
   say "installing node LTS with fnm"
   "$FNM" install --lts >/dev/null 2>&1 && "$FNM" default lts-latest \
-    && ok "node LTS is the default" || warn "fnm could not install node"
+    && ok "node LTS is the default" || fail "fnm could not install node"
 }
 
 # This is what the old nix-darwin config did and the first bash draft did not:
@@ -155,9 +160,12 @@ if [ "$OS" = macos ] && ask "3/9  Install all packages and apps from Brewfile (s
   # Nothing else can bootstrap Homebrew, and everything below depends on it.
   if ! command -v brew >/dev/null 2>&1; then
     say "installing Homebrew"
+    # NONINTERACTIVE makes Homebrew's installer use `sudo -n`, which aborts
+    # with "Need sudo access" unless a password was entered first.
+    [ "$INTERACTIVE" -eq 1 ] && sudo -v
     NONINTERACTIVE=1 /bin/bash -c \
       "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" \
-      || warn "Homebrew install failed"
+      || fail "Homebrew install failed"
     [ -x /opt/homebrew/bin/brew ] && eval "$(/opt/homebrew/bin/brew shellenv)"
   fi
 
@@ -165,17 +173,17 @@ if [ "$OS" = macos ] && ask "3/9  Install all packages and apps from Brewfile (s
     # Third-party tap trust is declared per entry in the Brewfile.
     say "brew bundle — this takes a while"
     # HOMEBREW_BUNDLE_FILE lets CI swap in a cask-free copy.
-    brew bundle --file="${HOMEBREW_BUNDLE_FILE:-Brewfile}" || warn "some packages failed; see above"
+    brew bundle --file="${HOMEBREW_BUNDLE_FILE:-Brewfile}" || fail "some packages failed; see above"
     ok "packages"
 
     # Asked separately so a work Mac gets the base alone. -y still accepts it.
     if [ -z "$IS_CI" ] && ask "     Also install personal apps from Brewfile.personal?"; then
-      brew bundle --file=Brewfile.personal || warn "some personal apps failed"
+      brew bundle --file=Brewfile.personal || fail "some personal apps failed"
       ok "personal apps"
     fi
     setup_node
   else
-    warn "Homebrew still unavailable — skipping packages"
+    fail "Homebrew still unavailable — skipping packages"
   fi
 fi
 
@@ -183,17 +191,17 @@ if [ "$OS" = linux ] && ask "3/9  Install packages from linux/packages.txt?"; th
   if [ -f linux/packages.txt ]; then
     # strip comments and blank lines, install in one transaction
     pkgs=$(grep -vE '^\s*(#|$)' linux/packages.txt | tr '\n' ' ')
-    sudo apt update && sudo apt install -y $pkgs || warn "some packages failed"
+    sudo apt update && sudo apt install -y $pkgs || fail "some packages failed"
     ok "packages"
   else
-    warn "linux/packages.txt not found"
+    fail "linux/packages.txt not found"
   fi
 
   # Not in apt. --skip-shell: the shell hook already lives in zshrc.common.
   if [ ! -x "$HOME/.local/share/fnm/fnm" ] && ! command -v fnm >/dev/null 2>&1; then
     say "installing fnm"
     curl -fsSL https://fnm.vercel.app/install | bash -s -- --skip-shell >/dev/null \
-      || warn "fnm install failed"
+      || fail "fnm install failed"
   fi
   setup_node
 fi
@@ -210,7 +218,8 @@ fi
 # .git/hooks/ is not tracked by git, so a hook committed to the repo does
 # nothing until core.hooksPath points at it. That is why this belongs in the
 # installer rather than being a one-time manual step.
-if [ -d .githooks ] && [ -d .git ]; then
+git_ready() { [ "$OS" != macos ] || xcode-select -p >/dev/null 2>&1; }
+if [ -d .githooks ] && [ -d .git ] && git_ready; then
   if [ "$(git config core.hooksPath 2>/dev/null)" = ".githooks" ]; then
     say "git hooks already enabled"
   else
@@ -232,7 +241,7 @@ if ask "5/9  Install oh-my-zsh and its plugins?"; then
     say "installing oh-my-zsh"
     RUNZSH=no CHSH=no sh -c \
       "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" \
-      "" --unattended >/dev/null 2>&1 || warn "oh-my-zsh install failed"
+      "" --unattended >/dev/null 2>&1 || fail "oh-my-zsh install failed"
   fi
 
   if [ -d "$HOME/.oh-my-zsh" ]; then
@@ -241,7 +250,7 @@ if ask "5/9  Install oh-my-zsh and its plugins?"; then
         printf '    %s (already there)\n' "$repo"
       else
         git clone -q --depth=1 "https://github.com/zsh-users/$repo" \
-          "$ZC/plugins/$repo" && printf '    %s\n' "$repo"
+          "$ZC/plugins/$repo" && printf '    %s\n' "$repo" || fail "clone failed: $repo"
       fi
     done
     # zsh must be the login shell or none of this config is ever read.
@@ -254,7 +263,7 @@ if ask "5/9  Install oh-my-zsh and its plugins?"; then
     fi
     ok "oh-my-zsh and plugins"
   else
-    warn "oh-my-zsh unavailable — skipping plugins"
+    fail "oh-my-zsh unavailable — skipping plugins"
   fi
 fi
 
@@ -331,7 +340,7 @@ if ask "8/9  Install VS Code extensions ($(wc -l < "$OS/vscode/extensions.txt" 2
     while read -r ext; do
       case "$ext" in ''|\#*) continue ;; esac
       code --install-extension "$ext" --force >/dev/null 2>&1 \
-        && printf '    %s\n' "$ext" || warn "failed: $ext"
+        && printf '    %s\n' "$ext" || fail "failed: $ext"
     done < "$OS/vscode/extensions.txt"
     ok "extensions"
   else
@@ -357,25 +366,27 @@ if ask "9/9  Set up AI coding agents (config + verify)?"; then
   done
 
   # --- agents ---
+  # The curl installers write here; without it every run reinstalls.
+  export PATH="$HOME/.local/bin:$HOME/.opencode/bin:$PATH"
   # claude-code and opencode come from the Brewfile. If step 3 was skipped or
   # brew is absent, fall back to each project's own installer.
   if ! command -v claude >/dev/null 2>&1; then
     say "installing claude code"
     if command -v brew >/dev/null 2>&1; then
-      brew install --cask claude-code >/dev/null 2>&1 || warn "claude-code failed"
+      brew install --cask claude-code >/dev/null 2>&1 || fail "claude-code failed"
     else
       curl -fsSL https://claude.ai/install.sh | bash >/dev/null 2>&1 \
-        || warn "claude install failed — see https://claude.com/product/claude-code"
+        || fail "claude install failed — see https://claude.com/product/claude-code"
     fi
   fi
 
   if ! command -v opencode >/dev/null 2>&1; then
     say "installing opencode"
     if command -v brew >/dev/null 2>&1; then
-      brew install opencode >/dev/null 2>&1 || warn "opencode failed"
+      brew install opencode >/dev/null 2>&1 || fail "opencode failed"
     else
       curl -fsSL https://opencode.ai/install | bash >/dev/null 2>&1 \
-        || warn "opencode install failed — see https://opencode.ai"
+        || fail "opencode install failed — see https://opencode.ai"
     fi
   fi
 
@@ -405,4 +416,9 @@ fi
 
 echo
 [ -d "$BACKUP" ] && say "replaced files backed up to ${BACKUP#$HOME/}"
-ok "done — run 'exec zsh' to reload"
+if [ "$FAILED" -eq 0 ]; then
+  ok "done — run 'exec zsh' to reload"
+else
+  fail "finished with failures — see ✗ lines above"
+fi
+exit "$FAILED"
