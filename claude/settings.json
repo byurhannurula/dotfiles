@@ -210,7 +210,20 @@
       "Edit(//**/.dev.vars)",
       "Edit(//**/.dev.vars.*)",
       "Edit(//**/*.pem)",
-      "Edit(//**/*.key)"
+      "Edit(//**/*.key)",
+      "Edit(~/.zshrc)",
+      "Edit(~/.zshenv)",
+      "Edit(~/.zprofile)",
+      "Edit(~/.bashrc)",
+      "Edit(~/.bash_profile)",
+      "Edit(~/.profile)",
+      "Edit(~/.oh-my-zsh/custom/**)",
+      "Edit(~/.gitconfig)",
+      "Edit(~/.config/git/**)",
+      "Edit(//**/.git/config)",
+      "Edit(~/.claude/settings.json)",
+      "Edit(~/.claude/settings.local.json)",
+      "Edit(~/.claude/hooks/**)"
     ],
     "ask": [
       "Bash(git merge:*)",
