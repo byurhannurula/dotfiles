@@ -43,6 +43,12 @@ else
   row "hostname" "$(hostname)"
 fi
 row "arch" "$(uname -m)"
+# On a fresh Mac, /usr/bin/git and python3 are stubs that open the Command
+# Line Tools installer, so nothing below may call them until CLT exists.
+CLT=1
+if [ "$OS" = macos ]; then
+  xcode-select -p >/dev/null 2>&1 && yes_ "command line tools" || { CLT=0; no_ "command line tools" "run: xcode-select --install"; }
+fi
 row "disk free" "$(df -h "$HOME" | awk 'NR==2 {print $4 " of " $2}')"
 row "user" "${USER:-$(id -un)}"
 row "login shell" "${SHELL:-?}"
@@ -78,7 +84,9 @@ fi
 # ---- tools ------------------------------------------------------------------
 head_ "Tools"
 for t in git brew gh pnpm python3 go docker gitleaks fzf eza bat rg btop jq; do
-  if has "$t"; then
+  if [ "$CLT" -eq 0 ] && { [ "$t" = git ] || [ "$t" = python3 ]; }; then
+    no_ "$t" "needs the Command Line Tools"
+  elif has "$t"; then
     case "$t" in
       go) yes_ "$t" "$(ver go version)" ;;
       *)  yes_ "$t" "$(ver "$t" --version)" ;;
@@ -95,19 +103,23 @@ done
 
 # ---- git and ssh ------------------------------------------------------------
 head_ "Git and SSH"
-row "user" "$(git config --global user.name) <$(git config --global user.email)>"
-if [ "$(git config --global commit.gpgsign)" = true ]; then
-  key=$(git config --global user.signingkey)
-  key=${key/#\~/$HOME}
-  [ -f "$key" ] && yes_ "commit signing" "$(git config --global gpg.format) ${key/#$HOME/~}" \
-                || no_ "commit signing" "key missing: $key"
+if [ "$CLT" -eq 1 ]; then
+  row "user" "$(git config --global user.name) <$(git config --global user.email)>"
+  if [ "$(git config --global commit.gpgsign)" = true ]; then
+    key=$(git config --global user.signingkey)
+    key=${key/#\~/$HOME}
+    [ -f "$key" ] && yes_ "commit signing" "$(git config --global gpg.format) ${key/#$HOME/~}" \
+                  || no_ "commit signing" "key missing: $key"
+  else
+    no_ "commit signing" "commit.gpgsign is not true"
+  fi
+  pub=$(ls "$HOME"/.ssh/id_*.pub 2>/dev/null | head -1)
+  [ -n "$pub" ] && yes_ "ssh key" "${pub/#$HOME/~}" || no_ "ssh key" "copy from Bitwarden or ssh-keygen -t ed25519"
+  [ "$(git config core.hooksPath)" = .githooks ] && yes_ "repo hooks" "gitleaks pre-commit" \
+    || no_ "repo hooks" "run: git config core.hooksPath .githooks"
 else
-  no_ "commit signing" "commit.gpgsign is not true"
+  no_ "git" "needs the Command Line Tools"
 fi
-pub=$(ls "$HOME"/.ssh/id_*.pub 2>/dev/null | head -1)
-[ -n "$pub" ] && yes_ "ssh key" "${pub/#$HOME/~}" || no_ "ssh key" "copy from Bitwarden or ssh-keygen -t ed25519"
-[ "$(git config core.hooksPath)" = .githooks ] && yes_ "repo hooks" "gitleaks pre-commit" \
-  || no_ "repo hooks" "run: git config core.hooksPath .githooks"
 
 # ---- homebrew ---------------------------------------------------------------
 if [ "$OS" = macos ] && has brew; then
