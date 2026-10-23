@@ -223,9 +223,10 @@ if [ -d .githooks ] && [ -d .git ] && git_ready; then
   if [ "$(git config core.hooksPath 2>/dev/null)" = ".githooks" ]; then
     say "git hooks already enabled"
   else
-    git config core.hooksPath .githooks && ok "git hooks enabled (gitleaks pre-commit)"
+    git config core.hooksPath .githooks && ok "git hooks enabled (secret scan pre-commit)"
   fi
-  command -v gitleaks >/dev/null 2>&1 || warn "gitleaks not installed — the hook will skip until it is"
+  command -v betterleaks >/dev/null 2>&1 || command -v gitleaks >/dev/null 2>&1 \
+    || warn "betterleaks not installed — the hook will skip until it is"
 fi
 
 # ---- oh-my-zsh plugins ------------------------------------------------------

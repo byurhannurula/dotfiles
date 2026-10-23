@@ -74,7 +74,7 @@ brew "tree"
 brew "wget"
 brew "parallel"
 brew "shellcheck"
-brew "gitleaks"         # the pre-commit secret scanner
+brew "betterleaks"      # the pre-commit secret scanner (gitleaks successor)
 brew "xmlstarlet"
 brew "mas"              # App Store CLI
 brew "dockutil"         # sets Dock contents; see macos/dock.sh

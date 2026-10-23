@@ -83,7 +83,7 @@ fi
 
 # ---- tools ------------------------------------------------------------------
 head_ "Tools"
-for t in git brew gh pnpm python3 go docker gitleaks fzf eza bat rg btop jq; do
+for t in git brew gh pnpm python3 go docker betterleaks fzf eza bat rg btop jq; do
   if [ "$CLT" -eq 0 ] && { [ "$t" = git ] || [ "$t" = python3 ]; }; then
     no_ "$t" "needs the Command Line Tools"
   elif has "$t"; then
@@ -115,7 +115,7 @@ if [ "$CLT" -eq 1 ]; then
   fi
   pub=$(ls "$HOME"/.ssh/id_*.pub 2>/dev/null | head -1)
   [ -n "$pub" ] && yes_ "ssh key" "${pub/#$HOME/~}" || no_ "ssh key" "copy from Bitwarden or ssh-keygen -t ed25519"
-  [ "$(git config core.hooksPath)" = .githooks ] && yes_ "repo hooks" "gitleaks pre-commit" \
+  [ "$(git config core.hooksPath)" = .githooks ] && yes_ "repo hooks" "secret scan pre-commit" \
     || no_ "repo hooks" "run: git config core.hooksPath .githooks"
 else
   no_ "git" "needs the Command Line Tools"

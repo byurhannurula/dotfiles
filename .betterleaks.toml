@@ -1,0 +1,11 @@
+# Secret-scan config for betterleaks (and gitleaks): the default rules, plus
+# one allowlist entry.
+[extend]
+useDefault = true
+
+[[allowlists]]
+# Placeholder left by the history rewrite that removed the homelab passwords
+# from macos/vscode/settings.json. The literal word is not a secret.
+description = "REMOVED placeholder from the password scrub"
+regexTarget = "line"
+regexes = ['''"password": "REMOVED"''']

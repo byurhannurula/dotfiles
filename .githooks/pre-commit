@@ -8,16 +8,23 @@
 #
 # Bypass in an emergency with: git commit --no-verify
 
-command -v gitleaks >/dev/null 2>&1 || {
-  printf '\033[0;33m!\033[0m gitleaks not installed — commit NOT scanned\n' >&2
-  printf '  brew install gitleaks\n' >&2
+# betterleaks is the successor to gitleaks (same authors; gitleaks now gets
+# security fixes only). Same flags, and both honour `gitleaks:allow`, so a
+# machine that still has only gitleaks keeps working.
+if command -v betterleaks >/dev/null 2>&1; then
+  scanner=betterleaks
+elif command -v gitleaks >/dev/null 2>&1; then
+  scanner=gitleaks
+else
+  printf '\033[0;33m!\033[0m betterleaks not installed — commit NOT scanned\n' >&2
+  printf '  brew install betterleaks\n' >&2
   exit 0
-}
+fi
 
 # --staged scans what is about to be committed, not the whole history.
 # --redact keeps any finding out of terminal scrollback and CI logs.
-gitleaks git --staged --redact --no-banner || {
-  printf '\033[0;31m✗\033[0m gitleaks blocked this commit.\n' >&2
+"$scanner" git --staged --redact --no-banner || {
+  printf '\033[0;31m✗\033[0m %s blocked this commit.\n' "$scanner" >&2
   printf '  Remove the secret, or annotate the line with: # gitleaks:allow\n' >&2
   printf '  Emergency bypass: git commit --no-verify\n' >&2
   exit 1

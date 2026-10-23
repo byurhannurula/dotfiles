@@ -121,7 +121,7 @@ is stored in this repo.
 
 | Group | Packages |
 |---|---|
-| Core | git, tree, wget, parallel, shellcheck, gitleaks, xmlstarlet, mas, dockutil, agent-browser, ansible |
+| Core | git, tree, wget, parallel, shellcheck, betterleaks, xmlstarlet, mas, dockutil, agent-browser, ansible |
 | Build | cmake, python@3.11, fnm, go, deno, pnpm, argon2 |
 | Mobile | cocoapods, fvm, gradle |
 | Cloud | podman, azure-cli, cloudflared, terraform, stripe |
@@ -358,7 +358,8 @@ vault is first opened.
 
 ### Pre-commit secret scan
 
-`.githooks/pre-commit` runs [gitleaks](https://github.com/gitleaks/gitleaks)
+`.githooks/pre-commit` runs [betterleaks](https://github.com/betterleaks/betterleaks)
+(the gitleaks successor; it falls back to gitleaks if only that is installed)
 against the staged diff and refuses the commit if it finds a secret. Enabled by
 `install.sh`, or by hand:
 
@@ -372,7 +373,7 @@ repo went most of its life with the hook present in an old branch and never
 active.
 
 No husky, no `package.json` — `core.hooksPath` is native git and needs nothing
-installed. If gitleaks is missing the hook warns and allows the commit rather
+installed. If neither scanner is installed the hook warns and allows the commit rather
 than blocking work; `git commit --no-verify` bypasses it in an emergency.
 
 GitHub push protection is not a substitute. It only catches vendor tokens with
@@ -386,7 +387,7 @@ by which point the secret is already in local history.
 
 | Job | Runner | Does |
 |---|---|---|
-| `lint` | ubuntu | shellcheck, `zsh -n` on every shell file, gitleaks |
+| `lint` | ubuntu | shellcheck, `zsh -n` on every shell file, betterleaks |
 | `linux` | ubuntu | `./install.sh -y`, then again for idempotence |
 | `macos` | macos | Brewfile parses, both `--dry` runs, formulae install, idempotence |
 
