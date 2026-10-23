@@ -135,6 +135,17 @@ if [ -n "$HOSTNAME_NEW" ]; then
 fi
 
 # ---- packages ---------------------------------------------------------------
+# fnm starts with no Node at all. The LTS becomes the default that scripts and
+# shells outside a project get; projects pick their own through .nvmrc.
+setup_node() {
+  FNM=$(command -v fnm 2>/dev/null || echo "$HOME/.local/share/fnm/fnm")
+  [ -x "$FNM" ] || return 0
+  [ -e "$HOME/.local/share/fnm/aliases/default" ] && return 0
+  say "installing node LTS with fnm"
+  "$FNM" install --lts >/dev/null 2>&1 && "$FNM" default lts-latest \
+    && ok "node LTS is the default" || warn "fnm could not install node"
+}
+
 # This is what the old nix-darwin config did and the first bash draft did not:
 # actually install the software. The Brewfile is generated from a capture, so
 # it reflects what the machine really had, not a guess.
@@ -159,6 +170,7 @@ if [ "$OS" = macos ] && ask "3/9  Install all packages and apps from macos/Brewf
       brew bundle --file=macos/Brewfile.personal || warn "some personal apps failed"
       ok "personal apps"
     fi
+    setup_node
   else
     warn "Homebrew still unavailable — skipping packages"
   fi
@@ -180,16 +192,7 @@ if [ "$OS" = linux ] && ask "3/9  Install packages from linux/packages.txt?"; th
     curl -fsSL https://fnm.vercel.app/install | bash -s -- --skip-shell >/dev/null \
       || warn "fnm install failed"
   fi
-fi
-
-# ---- node -------------------------------------------------------------------
-# fnm starts with no Node at all. The LTS becomes the default that scripts and
-# shells outside a project get; projects pick their own through .nvmrc.
-FNM=$(command -v fnm 2>/dev/null || echo "$HOME/.local/share/fnm/fnm")
-if [ -x "$FNM" ] && [ ! -e "$HOME/.local/share/fnm/aliases/default" ]; then
-  say "installing node LTS with fnm"
-  "$FNM" install --lts >/dev/null 2>&1 && "$FNM" default lts-latest \
-    && ok "node LTS is the default" || warn "fnm could not install node"
+  setup_node
 fi
 
 # ---- dock -------------------------------------------------------------------
