@@ -75,5 +75,8 @@ setopt INTERACTIVE_COMMENTS   # allow # comments when typing interactively
 # The redirect belongs INSIDE the substitution: `source <(cmd) 2>/dev/null`
 # silences source, not cmd, so an old fzf still prints "unknown option: --zsh"
 # to the terminal. --zsh arrived in fzf 0.48; Debian and Ubuntu ship older.
-(( $+commands[fzf] )) && source <(fzf --zsh 2>/dev/null)
+#
+# Only with a terminal: agents and editors run `zsh -ic` without one, and
+# fzf's key-binding setup then prints "can't change option: zle" twice.
+(( $+commands[fzf] )) && [[ -t 0 ]] && source <(fzf --zsh 2>/dev/null)
 
