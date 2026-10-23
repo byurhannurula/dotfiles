@@ -78,7 +78,8 @@ jobs:
         run: |
           sudo chown -R root:root /usr/share/zsh
           sudo chmod -R g-w,o-w /usr/share/zsh
-          zsh -c 'autoload -Uz compaudit; compaudit' && echo "still insecure" || echo "clean"
+          # compaudit exits 0 when clean, 1 and lists the dirs when not.
+          zsh -c 'autoload -Uz compaudit; compaudit' || { echo "still insecure"; exit 1; }
 
       # Catches broken rc files nothing else surfaces: a login shell that
       # prints to stderr is a bug even when it exits 0.
@@ -89,10 +90,17 @@ jobs:
 
       # .zshenv must put fnm's default node on PATH: non-interactive shells and
       # `env node` shebangs never see the hook in zshrc.common.
+      # The runner ships its own node, so "node runs" proves nothing: check
+      # it is fnm's, in both non-login and login shells.
       - name: node must work non-interactively
         run: |
-          zsh -c 'node --version' || {
-            echo "node unreachable in a non-interactive shell"; exit 1; }
+          for flags in -c -lc; do
+            where=$(zsh $flags 'command -v node')
+            case "$where" in
+              *fnm*) echo "zsh $flags: $where" ;;
+              *) echo "zsh $flags: node is not fnm's: $where"; exit 1 ;;
+            esac
+          done
           printf '#!/usr/bin/env node\nprocess.exit(0)\n' > /tmp/shebang.js
           chmod +x /tmp/shebang.js
           zsh -c '/tmp/shebang.js' || {
@@ -173,10 +181,17 @@ jobs:
 
       # .zshenv must put fnm's default node on PATH: non-interactive shells and
       # `env node` shebangs never see the hook in zshrc.common.
+      # The runner ships its own node, so "node runs" proves nothing: check
+      # it is fnm's, in both non-login and login shells.
       - name: node must work non-interactively
         run: |
-          zsh -c 'node --version' || {
-            echo "node unreachable in a non-interactive shell"; exit 1; }
+          for flags in -c -lc; do
+            where=$(zsh $flags 'command -v node')
+            case "$where" in
+              *fnm*) echo "zsh $flags: $where" ;;
+              *) echo "zsh $flags: node is not fnm's: $where"; exit 1 ;;
+            esac
+          done
           printf '#!/usr/bin/env node\nprocess.exit(0)\n' > /tmp/shebang.js
           chmod +x /tmp/shebang.js
           zsh -c '/tmp/shebang.js' || {
