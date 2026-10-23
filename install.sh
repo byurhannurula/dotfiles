@@ -149,13 +149,7 @@ if [ "$OS" = macos ] && ask "3/9  Install all packages and apps from macos/Brewf
   fi
 
   if command -v brew >/dev/null 2>&1; then
-    # Third-party taps need explicit trust or their formulae are SKIPPED
-    # SILENTLY — no error, the package is simply never installed.
-    say "trusting taps"
-    for t in adembc/tap hashicorp/tap metafab/tap ngrok/ngrok \
-             terraform-linters/tap stripe/stripe-cli; do
-      brew tap "$t" >/dev/null 2>&1 || warn "tap failed: $t"
-    done
+    # Third-party tap trust is declared per entry in the Brewfile.
     say "brew bundle — this takes a while"
     brew bundle --file=macos/Brewfile || warn "some packages failed; see above"
     ok "packages"

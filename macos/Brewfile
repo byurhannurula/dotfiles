@@ -9,15 +9,13 @@
 # =============================================================================
 
 # ---- taps -------------------------------------------------------------------
-tap "adembc/tap"
+# Homebrew 6+ refuses to load anything from a third-party tap until it is
+# trusted, and `brew tap` alone does not trust it. `trusted: true` on each
+# entry below is what brew bundle needs.
 tap "byurhannurula/tap"
 tap "hashicorp/tap"
-tap "homebrew/services"
-tap "jsattler/tap"
 tap "metafab/tap"
-tap "ngrok/ngrok"
 tap "stripe/stripe-cli"
-tap "supersonic-app/supersonic"
 tap "terraform-linters/tap"
 
 # =============================================================================
@@ -82,7 +80,6 @@ brew "cmake"
 brew "python@3.11"
 brew "fnm"              # node versions; reads .nvmrc
 brew "pnpm"
-brew "openssl@1.1"
 brew "argon2"
 
 # ---- mobile / flutter -------------------------------------------------------
@@ -92,9 +89,10 @@ brew "gradle"
 
 # ---- containers and cloud ---------------------------------------------------
 brew "podman"
-brew "azure-cli"
 brew "cloudflared"
-brew "hashicorp/tap/terraform"
+brew "hashicorp/tap/terraform", trusted: true
+brew "stripe/stripe-cli/stripe", trusted: true
+cask "azure-cli"        # moved from formula to cask
 
 # ---- media ------------------------------------------------------------------
 brew "ffmpeg"
@@ -113,8 +111,7 @@ brew "redis"
 brew "watchman"
 brew "mprocs"
 brew "mole"
-brew "adembc/tap/lazyssh"
-brew "metafab/tap/otel-gui"
+brew "metafab/tap/otel-gui", trusted: true
 
 # =============================================================================
 # CASKS
@@ -123,12 +120,12 @@ cask "betterdisplay"
 cask "monitorcontrol"
 cask "stats"
 cask "drawio"
-cask "jotter"
+cask "byurhannurula/tap/jotter", trusted: true
 cask "iptvnator"
 cask "ngrok"
 cask "android-platform-tools"
-cask "silicon-labs-vcp-driver"
-cask "tflint"
+# cask "silicon-labs-vcp-driver"   # vendor URL returns 403 (2026-10)
+cask "terraform-linters/tap/tflint", trusted: true
 
 # Java. temurin@8 and @17 are versioned; plain temurin is current.
 cask "temurin"
@@ -184,7 +181,7 @@ cask "balenaetcher"
 
 # system and utilities
 cask "coconutbattery"
-cask "flux"
+cask "flux-app"
 cask "anydesk"
 cask "home-assistant"
 cask "yubico-authenticator"
