@@ -9,8 +9,6 @@
 # list is ignored and no plugin loads.
 # =============================================================================
 
-export TERM=xterm-256color
-
 # nano, not vi: git commit messages, crontab -e and the `config` alias all
 # honour this.
 export EDITOR=nano

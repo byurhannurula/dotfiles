@@ -2,3 +2,7 @@ window-width=145
 window-height=45
 
 font-family=Menlo
+# Ghostty sets TERM=xterm-ghostty, which most servers have no terminfo for.
+# ssh-env falls back to xterm-256color over ssh; ssh-terminfo installs
+# Ghostty's terminfo on the host when it can. Local shells keep full features.
+shell-integration-features = ssh-env,ssh-terminfo
