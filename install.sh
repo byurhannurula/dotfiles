@@ -373,6 +373,7 @@ if ask "9/9  Set up AI coding agents (config + verify)?"; then
   put claude/settings.json         "$HOME/.claude/settings.json"
   put claude/statusline-command.sh "$HOME/.claude/statusline-command.sh"
   [ -f "$HOME/.claude/statusline-command.sh" ] && chmod +x "$HOME/.claude/statusline-command.sh"
+  put claude/hooks/git-readonly.py "$HOME/.claude/hooks/git-readonly.py"
 
   for f in opencode.json tui.json; do
     put "shared/opencode/$f" "$HOME/.config/opencode/$f"
