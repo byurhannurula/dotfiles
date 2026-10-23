@@ -87,8 +87,8 @@ syntax-highlighting plugins, and sets the default shell to zsh. Prompt stays
 `robbyrussell` (ships with oh-my-zsh; no framework installed on purpose).
 
 ### 06 — Node runtime
-nvm + the latest `NODE_MAJOR` (default 22) + pnpm via corepack. nvm rather
-than apt so global npm installs need no sudo.
+fnm + the current LTS + pnpm via corepack. fnm rather than apt so global
+npm installs need no sudo. `install.sh` does the fnm part on its own.
 
 ### 07 — CLI agents
 The reason the box exists.

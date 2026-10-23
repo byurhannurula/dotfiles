@@ -38,14 +38,12 @@ brew bundle --file=macos/Brewfile
 | fzf | Ctrl-R history search, Ctrl-T file search |
 | direnv | per-directory env, auto-loaded on cd |
 | atuin | history in SQLite, searchable, optionally synced |
-| mise | one version manager for node/python/go — replaces nvm |
+| mise | one version manager for node/python/go |
 
 All optional, all commented out in the Brewfile.
 
-> **mise vs nvm.** `zshrc.common` still sources nvm, which costs ~200ms on
-> every shell. mise is near-instant and handles python and go as well. Both
-> are activated if present, but running both is pointless — pick mise and
-> delete the nvm block once the toolchains are migrated.
+> **Node uses fnm, not mise.** fnm reads `.nvmrc` and is installed. mise only
+> pays off when python and go versions also need managing per project.
 
 ## Worth having
 
