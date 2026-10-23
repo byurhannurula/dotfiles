@@ -23,6 +23,7 @@ path=(
   "$HOME/.local/bin"
   "$PNPM_HOME/bin"
   "$HOME/.opencode/bin"
+  "$HOME/go/bin"                   # `go install` targets; brew's go does not add it
   /opt/homebrew/opt/ruby/bin       # keg-only: brew does not add this itself
   $path
   ./node_modules/.bin              # project-local binaries, lowest priority
