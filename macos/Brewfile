@@ -29,6 +29,7 @@ brew "fzf"              # ctrl-r history search, ctrl-t files
 brew "ripgrep"          # grep
 brew "jq"
 brew "gh"
+brew "btop"             # top
 
 # Not installed. Each has a guarded alias or hook ready in shared/aliases.zsh
 # or shared/zshrc.common — uncomment here, run brew bundle, and it activates on
@@ -74,11 +75,15 @@ brew "gitleaks"         # the pre-commit secret scanner
 brew "xmlstarlet"
 brew "mas"              # App Store CLI
 brew "dockutil"         # sets Dock contents; see macos/dock.sh
+brew "agent-browser"    # browser automation for agents; see claude/CLAUDE.md
+brew "ansible"
 
 # ---- languages and build ----------------------------------------------------
 brew "cmake"
 brew "python@3.11"
 brew "fnm"              # node versions; reads .nvmrc
+brew "go"
+brew "deno"
 brew "pnpm"
 brew "argon2"
 
@@ -141,17 +146,20 @@ cask "temurin@8"
 cask "brave-browser"
 cask "google-chrome"
 cask "firefox"
+cask "helium-browser"
 
 # editors and terminals
 cask "visual-studio-code"
 cask "zed"
 cask "ghostty"
+cask "font-jetbrains-mono"  # the VS Code editor font
 
 # dev
 cask "orbstack"              # provides docker + docker-compose here
 cask "tableplus"
 cask "mongodb-compass"
 cask "cyberduck"
+cask "dbeaver-community"
 
 # comms
 cask "discord"
@@ -167,6 +175,9 @@ cask "tiles"
 cask "hiddenbar"
 cask "appcleaner"
 cask "the-unarchiver"
+cask "alt-tab"                # per-window cmd-tab
+cask "thaw"                   # menu bar manager
+cask "marta"                  # two-pane file manager
 
 # media
 cask "vlc"
