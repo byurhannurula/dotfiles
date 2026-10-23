@@ -12,8 +12,13 @@
 # ---- PATH -------------------------------------------------------------------
 typeset -U path PATH
 
+# Without it `pnpm add -g` fails and `pnpm setup` appends its own block to
+# ~/.zshrc, which the next install.sh run overwrites. Same layout as macOS.
+export PNPM_HOME="$HOME/.local/share/pnpm"
+
 path=(
   "$HOME/.local/bin"
+  "$PNPM_HOME/bin"
   "$HOME/.opencode/bin"
   $path
 )
