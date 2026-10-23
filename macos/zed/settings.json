@@ -28,9 +28,6 @@
     "metrics": false,
     "anthropic_retention": false
   },
-  "session": {
-    "trust_all_worktrees": true
-  },
   "terminal": {
     "font_size": 13.0,
     "font_family": "Menlo",
