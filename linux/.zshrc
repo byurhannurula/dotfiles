@@ -16,7 +16,6 @@ path=(
   "$HOME/.local/bin"
   "$HOME/.opencode/bin"
   $path
-  ./node_modules/.bin
 )
 
 # ---- macOS muscle memory ----------------------------------------------------

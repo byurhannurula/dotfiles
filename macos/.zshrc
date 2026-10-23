@@ -26,7 +26,6 @@ path=(
   "$HOME/go/bin"                   # `go install` targets; brew's go does not add it
   /opt/homebrew/opt/ruby/bin       # keg-only: brew does not add this itself
   $path
-  ./node_modules/.bin              # project-local binaries, lowest priority
 )
 
 # ---- homebrew ---------------------------------------------------------------
