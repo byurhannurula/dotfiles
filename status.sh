@@ -121,6 +121,33 @@ else
   no_ "git" "needs the Command Line Tools"
 fi
 
+# ---- security ---------------------------------------------------------------
+# All without sudo. Fixes are in macos/harden.sh (./install.sh harden).
+if [ "$OS" = macos ]; then
+  head_ "Security"
+  fdesetup status 2>/dev/null | grep -q 'FileVault is On' && yes_ "FileVault" || no_ "FileVault" "./install.sh harden"
+  fw=/usr/libexec/ApplicationFirewall/socketfilterfw
+  "$fw" --getglobalstate 2>/dev/null | grep -q enabled && yes_ "firewall" || no_ "firewall" "./install.sh harden"
+  "$fw" --getstealthmode 2>/dev/null | grep -qE 'is on|enabled' && yes_ "stealth mode" || no_ "stealth mode" "./install.sh harden"
+  spctl --status 2>/dev/null | grep -q enabled && yes_ "Gatekeeper" || no_ "Gatekeeper" "run: sudo spctl --global-enable"
+  csrutil status 2>/dev/null | grep -q enabled && yes_ "SIP" || no_ "SIP" "turn on from recovery mode"
+  grep -qE '^auth[[:space:]].*pam_tid\.so' /etc/pam.d/sudo_local 2>/dev/null \
+    && yes_ "Touch ID for sudo" || diff_ "Touch ID for sudo" "off: ./install.sh harden"
+  [ -f /etc/ssh/sshd_config.d/010-hardening.conf ] && yes_ "sshd keys only" || diff_ "sshd keys only" "not installed: ./install.sh harden"
+  # launchd holds the listening socket while a sharing service is on.
+  listening=$(netstat -anp tcp 2>/dev/null | grep LISTEN)
+  for p in 22:"Remote Login" 5900:"Screen Sharing"; do
+    echo "$listening" | grep -q "\.${p%%:*} " && diff_ "${p#*:}" "on (port ${p%%:*})" || row "${p#*:}" "off"
+  done
+  if has tailscale; then
+    tailscale status >/dev/null 2>&1 && yes_ "Tailscale" "connected" || diff_ "Tailscale" "installed, not connected"
+  elif [ -d /Applications/Tailscale.app ]; then
+    diff_ "Tailscale" "app installed; CLI not on PATH"
+  else
+    no_ "Tailscale" "brew install --cask tailscale-app"
+  fi
+fi
+
 # ---- homebrew ---------------------------------------------------------------
 if [ "$OS" = macos ] && has brew; then
   head_ "Homebrew"
