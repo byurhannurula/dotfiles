@@ -176,6 +176,10 @@ cask "coconutbattery"
 cask "flux-app"
 cask "yubico-authenticator"
 
+# remote access: Screen Sharing and ssh over the tailnet; see macos/harden.sh
+cask "tailscale-app"          # standalone build: GUI, auto-updates
+# cask "secretive"            # ssh keys in the Secure Enclave; needs a new key on GitHub
+
 # =============================================================================
 # App Store
 #
@@ -191,8 +195,6 @@ cask "yubico-authenticator"
 # mas "Xcode",   id: 497799835
 
 # Not installable by brew or mas — keep installing these by hand:
-#   Tailscale       installed via the App Store into a .localized folder,
-#                   so `--adopt` cannot match it; the cask is "tailscale-app"
 #   Whisper Lite    your own app
 #   Screendrop      not in brew
 #   SafeNet         vendor download
