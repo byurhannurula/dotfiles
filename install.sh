@@ -6,6 +6,7 @@
 #   ./install.sh -y                 # accept everything
 #   ./install.sh --hostname my-mac  # set the hostname too
 #   ./install.sh status             # report only; changes nothing
+#   ./install.sh harden             # macOS security settings (sudo, asks each)
 #
 # Copies, never symlinks: edits to ~ stay local until you copy them back.
 # Anything replaced is kept in ~/.dotfiles.backup/<timestamp>/.
@@ -40,9 +41,10 @@ IS_CI="${CI:-}"
 while [ $# -gt 0 ]; do
   case "$1" in
     status)     exec ./status.sh ;;
+    harden)     exec bash macos/harden.sh ;;
     -y|--yes)   YES=1; shift ;;
     --hostname) HOSTNAME_NEW="${2:?--hostname needs a name}"; shift 2 ;;
-    -h|--help)  sed -n '3,13p' "$0"; exit 0 ;;
+    -h|--help)  sed -n '3,14p' "$0"; exit 0 ;;
     *) echo "unknown option: $1" >&2; exit 1 ;;
   esac
 done
