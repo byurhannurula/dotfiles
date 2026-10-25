@@ -390,7 +390,18 @@
       "Bash(gh api * -F *)",
       "Bash(gh api * --field*)",
       "Bash(gh api * --raw-field*)",
-      "Bash(gh api * --input*)"
+      "Bash(gh api * --input*)",
+      "Edit(//**/dotfiles/shared/.zshenv)",
+      "Edit(//**/dotfiles/shared/.zprofile)",
+      "Edit(//**/dotfiles/shared/zshrc.common)",
+      "Edit(//**/dotfiles/shared/aliases.zsh)",
+      "Edit(//**/dotfiles/shared/.gitconfig)",
+      "Edit(//**/dotfiles/macos/.zshrc)",
+      "Edit(//**/dotfiles/linux/.zshrc)",
+      "Edit(//**/dotfiles/macos/aliases.macos.zsh)",
+      "Edit(//**/dotfiles/linux/aliases.linux.zsh)",
+      "Edit(//**/dotfiles/claude/settings.json)",
+      "Edit(//**/dotfiles/claude/hooks/**)"
     ],
     "defaultMode": "acceptEdits",
     "disableBypassPermissionsMode": "disable"
