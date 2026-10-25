@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# install.sh — copy the config in this repo into place.
+# install.sh — link the config in this repo into place.
 #
 #   ./install.sh                    # ask before each group
 #   ./install.sh -y                 # accept everything
@@ -8,13 +8,17 @@
 #   ./install.sh status             # report only; changes nothing
 #   ./install.sh harden             # macOS security settings (sudo, asks each)
 #
-# Copies, never symlinks: edits to ~ stay local until you copy them back.
+# Symlinks: ~/.zshrc and the rest point into this repo, so the repo is the
+# live config. Edits in ~ are git changes, and a git pull applies at once.
+# Obsidian settings are copied: they live in a synced vault.
 # Anything replaced is kept in ~/.dotfiles.backup/<timestamp>/.
 #
 # bash 3.2 compatible — macOS ships 3.2 and will never update it.
 
 set -uo pipefail
 cd "$(dirname "$0")" || exit 1
+# Physical path: links made through a symlinked checkout break when it moves.
+REPO=$(pwd -P)
 
 say()  { printf '\033[0;34m→\033[0m %s\n' "$1"; }
 ok()   { printf '\033[0;32m✓\033[0m %s\n' "$1"; }
@@ -75,6 +79,20 @@ put() {
   fi
   mkdir -p "$(dirname "$dest")"
   cp "$src" "$dest" && printf '    %s\n' "${dest#$HOME/}" || fail "could not write ${dest#$HOME/}"
+}
+
+# link DEST -> repo SRC, moving whatever is there to the backup
+link() {
+  src="$REPO/$1"; dest=$2
+  [ -f "$src" ] || return 0
+  [ "$(readlink "$dest" 2>/dev/null)" = "$src" ] && return 0
+  if [ -e "$dest" ] || [ -L "$dest" ]; then
+    mkdir -p "$BACKUP/$(dirname "${dest#$HOME/}")"
+    mv "$dest" "$BACKUP/${dest#$HOME/}" \
+      || { fail "could not back up ${dest#$HOME/} — left unchanged"; return 1; }
+  fi
+  mkdir -p "$(dirname "$dest")"
+  ln -s "$src" "$dest" && printf '    %s\n' "${dest#$HOME/}" || fail "could not link ${dest#$HOME/}"
 }
 
 # ---- preflight --------------------------------------------------------------
@@ -284,17 +302,17 @@ fi
 
 # ---- shell ------------------------------------------------------------------
 if ask "6/9  Install shell config (.zshrc, aliases, git)?"; then
-  put shared/zshrc.common "$HOME/.zshrc.common"
-  put "$OS/.zshrc"        "$HOME/.zshrc"
-  put shared/.zprofile    "$HOME/.zprofile"
-  put shared/.zshenv      "$HOME/.zshenv"
-  put shared/.gitconfig   "$HOME/.gitconfig"
-  put shared/gitignore_global "$HOME/.gitignore-global"
+  link shared/zshrc.common "$HOME/.zshrc.common"
+  link "$OS/.zshrc"        "$HOME/.zshrc"
+  link shared/.zprofile    "$HOME/.zprofile"
+  link shared/.zshenv      "$HOME/.zshenv"
+  link shared/.gitconfig   "$HOME/.gitconfig"
+  link shared/gitignore_global "$HOME/.gitignore-global"
 
   if [ -d "$HOME/.oh-my-zsh" ]; then
     C="$HOME/.oh-my-zsh/custom"
-    put shared/aliases.zsh        "$C/aliases.zsh"
-    put "$OS/aliases.$OS.zsh"     "$C/aliases.$OS.zsh"
+    link shared/aliases.zsh        "$C/aliases.zsh"
+    link "$OS/aliases.$OS.zsh"     "$C/aliases.$OS.zsh"
   else
     warn "oh-my-zsh not installed — aliases not placed"
     warn "  sh -c \"\$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)\""
@@ -305,12 +323,12 @@ fi
 # ---- apps -------------------------------------------------------------------
 if ask "7/9  Install app config (ghostty, vscode, zed, btop, obsidian)?"; then
   if [ "$OS" = macos ]; then
-    put macos/ghostty/config "$HOME/Library/Application Support/com.mitchellh.ghostty/config"
+    link macos/ghostty/config "$HOME/Library/Application Support/com.mitchellh.ghostty/config"
     V="$HOME/Library/Application Support/Code/User"
   else
     # Natural scrolling has to be re-applied at every login: XFCE's own mouse
     # toggle reverts to libinput's per-device default otherwise.
-    put linux/input/libinput-gestures.conf "$HOME/.config/libinput-gestures.conf"
+    link linux/input/libinput-gestures.conf "$HOME/.config/libinput-gestures.conf"
 
     if [ -f linux/input/mac-trackpad-scroll.sh ]; then
       mkdir -p "$HOME/.local/bin" "$HOME/.config/autostart"
@@ -328,10 +346,10 @@ DESKTOP
     fi
     V="$HOME/.config/Code/User"
   fi
-  put "$OS/vscode/settings.json"    "$V/settings.json"
-  put "$OS/vscode/keybindings.json" "$V/keybindings.json"
-  put "$OS/zed/settings.json"       "$HOME/.config/zed/settings.json"
-  put "$OS/btop/btop.conf"          "$HOME/.config/btop/btop.conf"
+  link "$OS/vscode/settings.json"    "$V/settings.json"
+  link "$OS/vscode/keybindings.json" "$V/keybindings.json"
+  link "$OS/zed/settings.json"       "$HOME/.config/zed/settings.json"
+  link "$OS/btop/btop.conf"          "$HOME/.config/btop/btop.conf"
 
   # Obsidian settings live inside the vault, not in ~/Library, so they only
   # apply once the vault exists. Plugin code is not tracked — Obsidian
@@ -371,14 +389,13 @@ fi
 if ask "9/9  Set up AI coding agents (config + verify)?"; then
 
   # --- config ---
-  put claude/CLAUDE.md             "$HOME/.claude/CLAUDE.md"
-  put claude/settings.json         "$HOME/.claude/settings.json"
-  put claude/statusline-command.sh "$HOME/.claude/statusline-command.sh"
-  [ -f "$HOME/.claude/statusline-command.sh" ] && chmod +x "$HOME/.claude/statusline-command.sh"
-  put claude/hooks/git-readonly.py "$HOME/.claude/hooks/git-readonly.py"
+  link claude/CLAUDE.md             "$HOME/.claude/CLAUDE.md"
+  link claude/settings.json         "$HOME/.claude/settings.json"
+  link claude/statusline-command.sh "$HOME/.claude/statusline-command.sh"
+  link claude/hooks/git-readonly.py "$HOME/.claude/hooks/git-readonly.py"
 
   for f in opencode.json tui.json; do
-    put "shared/opencode/$f" "$HOME/.config/opencode/$f"
+    link "shared/opencode/$f" "$HOME/.config/opencode/$f"
   done
 
   # --- agents ---

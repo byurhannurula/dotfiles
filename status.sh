@@ -168,9 +168,11 @@ if [ "$OS" = macos ] && has brew; then
 fi
 
 # ---- config drift -----------------------------------------------------------
-# Same pairs install.sh copies. "differs" means ~ was edited after install,
-# or the repo moved on: copy whichever side is newer over the other.
-head_ "Config (repo vs home)"
+# Same pairs install.sh links. A regular file where a link should be means
+# the config was copied (an old install) or an app saved by replacing the
+# link: diff it against the repo, keep what you want, then run install.sh.
+head_ "Config (linked to repo)"
+REPO=$(pwd -P)
 V="$HOME/Library/Application Support/Code/User"
 [ "$OS" = linux ] && V="$HOME/.config/Code/User"
 pairs="shared/zshrc.common|$HOME/.zshrc.common
@@ -182,21 +184,30 @@ shared/gitignore_global|$HOME/.gitignore-global
 shared/aliases.zsh|$HOME/.oh-my-zsh/custom/aliases.zsh
 $OS/aliases.$OS.zsh|$HOME/.oh-my-zsh/custom/aliases.$OS.zsh
 $OS/vscode/settings.json|$V/settings.json
+$OS/vscode/keybindings.json|$V/keybindings.json
 $OS/zed/settings.json|$HOME/.config/zed/settings.json
+$OS/btop/btop.conf|$HOME/.config/btop/btop.conf
 claude/CLAUDE.md|$HOME/.claude/CLAUDE.md
 claude/settings.json|$HOME/.claude/settings.json
-shared/opencode/opencode.json|$HOME/.config/opencode/opencode.json"
+claude/statusline-command.sh|$HOME/.claude/statusline-command.sh
+claude/hooks/git-readonly.py|$HOME/.claude/hooks/git-readonly.py
+shared/opencode/opencode.json|$HOME/.config/opencode/opencode.json
+shared/opencode/tui.json|$HOME/.config/opencode/tui.json"
 [ "$OS" = macos ] && pairs="$pairs
 macos/ghostty/config|$HOME/Library/Application Support/com.mitchellh.ghostty/config"
 
 echo "$pairs" | while IFS='|' read -r src dest; do
   [ -f "$src" ] || continue
-  if [ ! -e "$dest" ]; then
+  if [ "$(readlink "$dest" 2>/dev/null)" = "$REPO/$src" ]; then
+    yes_ "$src"
+  elif [ -L "$dest" ]; then
+    diff_ "$src" "links elsewhere: $(readlink "$dest")"
+  elif [ ! -e "$dest" ]; then
     no_ "$src" "not installed"
   elif cmp -s "$src" "$dest"; then
-    yes_ "$src"
+    diff_ "$src" "a copy, not a link: run install.sh"
   else
-    diff_ "$src" "differs from ${dest/#$HOME/~}"
+    diff_ "$src" "a file that differs: diff it, then run install.sh"
   fi
 done
 

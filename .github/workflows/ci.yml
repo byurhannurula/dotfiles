@@ -64,6 +64,13 @@ jobs:
         env:
           CI: 1
 
+      - name: config is linked into the repo
+        run: |
+          for f in .zshrc .zshenv .zprofile .gitconfig .claude/settings.json; do
+            t=$(readlink "$HOME/$f") || { echo "$f is not a link"; exit 1; }
+            case "$t" in "$PWD"/*) ;; *) echo "$f -> $t"; exit 1 ;; esac
+          done
+
       # The runner ships /usr/share/zsh group-writable, which a stock Ubuntu
       # box does not (actions/runner-images#12526). Debian's /etc/zsh/zshrc
       # calls a bare `compinit`, and bare compinit prompts about writable
@@ -173,6 +180,13 @@ jobs:
         env:
           CI: 1
           HOMEBREW_BUNDLE_FILE: /tmp/Brewfile.nocask
+
+      - name: config is linked into the repo
+        run: |
+          for f in .zshrc .zshenv .zprofile .gitconfig .claude/settings.json; do
+            t=$(readlink "$HOME/$f") || { echo "$f is not a link"; exit 1; }
+            case "$t" in "$PWD"/*) ;; *) echo "$f -> $t"; exit 1 ;; esac
+          done
 
       - name: login shell must be silent
         run: |
