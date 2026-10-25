@@ -2,7 +2,7 @@
 # Brewfile — macOS packages.  Apply with:  brew bundle   (from the repo root)
 #
 # Captured from the daily-driver Mac on 2026-08-22, plus the shell tooling the aliases in
-# shared/aliases.zsh expect (see docs/packages.md).
+# shared/aliases.zsh expect.
 #
 # Work-safe base. Personal apps (chat, media, 3D printing, homelab hardware)
 # live in Brewfile.personal; install.sh asks about that file separately.

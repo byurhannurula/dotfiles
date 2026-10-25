@@ -1,120 +1,155 @@
+<div align="center">
+
 # dotfiles
 
-Config and one-shot setup for a macOS daily driver and a Linux dev box.
+Shell, editor, agent and macOS config for my Macs and a Linux dev box.
+One repo, linked into `~`, kept in sync with git.
 
-Config files only. Setup scripts and machine captures live elsewhere and are
-gitignored.
+[![ci](https://github.com/byurhannurula/dotfiles/actions/workflows/ci.yml/badge.svg)](https://github.com/byurhannurula/dotfiles/actions/workflows/ci.yml)
+[![license: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+![macOS](https://img.shields.io/badge/macOS-000000?logo=apple&logoColor=white)
+![Linux](https://img.shields.io/badge/Linux-FCC624?logo=linux&logoColor=black)
+![zsh](https://img.shields.io/badge/zsh-F15A24?logo=zsh&logoColor=white)
+![Homebrew](https://img.shields.io/badge/Homebrew-FBB040?logo=homebrew&logoColor=black)
+![Claude Code](https://img.shields.io/badge/Claude_Code-D97757?logo=claude&logoColor=white)
+
+</div>
+
+<!-- screenshot: .github/assets/terminal.png -->
+
+## Quick start
+
+```bash
+git clone git@github.com:byurhannurula/dotfiles.git ~/dev/dotfiles
+cd ~/dev/dotfiles
+./install.sh            # asks before each group, defaults to no
+./install.sh status     # what this machine has, compared with the repo
+./install.sh harden     # macOS security settings (sudo, asks each)
+```
+
+`install.sh` finds macOS or Linux from `uname` and picks the right files.
+Other options: `-y` accepts every group, `--hostname my-mac` sets the hostname.
+
+## How it stays in sync
+
+Config files in `~` are **symlinks into this repo**. The repo is the live
+config, so:
+
+1. Change a setting on one machine. The change is now a git change.
+2. Commit and push it.
+3. `git pull` on the other machine. The change is live at once.
+
+Read the diff before you pull, because nothing stands between a pull and
+your shell.
+
+- **Machine-only values** go in files that are not in the repo:
+  `~/.gitconfig.local` (work email, another signing key) and `~/.zshrc.local`.
+- **Backups:** anything that `install.sh` replaces moves to
+  `~/.dotfiles.backup/<timestamp>/`. Nothing is deleted.
+- **Copies, not links:** the Obsidian settings, because they live in a synced
+  vault. The macOS system settings and `harden.sh` files are also copies,
+  because they need sudo.
+- **Broken links:** some apps save by replacing the file, which breaks the
+  link. `./install.sh status` reports any file that should be a link.
+
+## Layout
 
 ```
-install.sh            the setup driver — asks before each group
-status.sh             read-only report: system, tools, node, drift
+install.sh            setup: asks before each group
+status.sh             read-only report: system, tools, security, links
 Brewfile              macOS base: CLI, dev tools, work-safe apps
 Brewfile.personal     macOS extras: chat, media, 3D printing, homelab
-shared/               config identical on both machines
+shared/               config for both systems
   zshrc.common          shell core: oh-my-zsh, history, options, integrations
-  aliases.zsh           aliases and functions, portable
-  .gitconfig .zprofile  git and login-shell config
+  aliases.zsh           aliases and functions
+  .gitconfig .zprofile .zshenv
   opencode/             opencode agent config
 macos/
   .zshrc                PATH and Homebrew; sources zshrc.common
   aliases.macos.zsh     defaults, lsof, brew, Rosetta
-  defaults.sh           system preferences
-  ghostty/ vscode/ zed/ btop/
+  defaults.sh           system settings (--dry to preview)
+  harden.sh sshd/       FileVault, firewall, Touch ID sudo, sshd keys-only
+  ghostty/ vscode/ zed/ btop/ obsidian/
 linux/
   .zshrc                PATH and clipboard shims; sources zshrc.common
   aliases.linux.zsh     apt, systemd, ss
-  packages.txt          42 apt packages
+  packages.txt          apt packages
   input/                gestures, Mac-style keys, natural scrolling
-claude/                 CLAUDE.md, settings.json, statusline
-docs/                   packages.md, linux-setup.md
+claude/                 CLAUDE.md, settings.json, statusline, hooks/
+docs/                   linux-setup.md
 ```
 
-## Usage
+Older config (fish, iTerm, the old VS Code setup, every earlier `.zshrc`) is
+on the [`legacy`](../../tree/legacy) branch. The nix-darwin attempt is on
+[`nix`](../../tree/nix).
 
-```bash
-git clone <this repo> ~/dev/dotfiles && cd ~/dev/dotfiles
-./install.sh                    # ask before each group
-./install.sh -y                 # accept everything
-./install.sh --hostname my-mac  # set the hostname non-interactively
-./install.sh status             # what this machine has vs the repo; read-only
-```
+## What install.sh does, in order
 
-Detects macOS or Linux from `uname` and picks the right files.
-
-**Copies, never symlinks.** Edits in `~` stay local until you copy them back.
-Anything replaced goes to `~/.dotfiles.backup/<timestamp>/`. Nothing is
-deleted, and every group defaults to no.
-
-## What it does, in order
-
-Order matters on a fresh machine — each step depends on the ones before.
+Each step needs the ones before it on a fresh machine.
 
 | # | Group | Does | Time |
 |---|---|---|---|
 | 1 | macOS defaults | Finder, Dock, pointer, text input, screenshots | fast |
 | 2 | hostname | all three macOS names, or `hostnamectl` | fast |
-| 3 | packages | the Brewfile / packages.txt, then optionally Brewfile.personal | **20–40 min** |
+| 3 | packages | Brewfile or packages.txt, then (asked again) Brewfile.personal; node LTS through fnm | **20–40 min** |
 | 4 | Dock contents | the apps in `macos/dock.txt`, in order | fast |
-| 5 | oh-my-zsh | the framework plus 3 plugins, optional `chsh` | ~1 min |
-| 6 | shell config | `.zshrc`, `.zshrc.common`, aliases, git | fast |
-| 7 | app config | ghostty, vscode, zed, btop, obsidian | fast |
-| 8 | vscode extensions | 18 extensions | ~2 min |
-| 9 | AI agents | config, then install and verify claude + opencode | ~2 min |
+| 5 | oh-my-zsh | the framework, 3 plugins, optional `chsh` | ~1 min |
+| 6 | shell config | links `.zshrc`, `.zshrc.common`, aliases, git | fast |
+| 7 | app config | links Ghostty, VS Code, Zed, btop; copies Obsidian | fast |
+| 8 | VS Code extensions | from `macos/vscode/extensions.txt` | ~2 min |
+| 9 | AI agents | links Claude and opencode config, then checks both CLIs | ~2 min |
 
-Step 3 installs zsh, git, `code` and the GUI apps, so steps 4–9 all depend on
-it — step 4 in particular skips any Dock app that is not installed yet. Step 1
-runs first so no window opens with the wrong settings.
-
-Every group asks `[y/N]` and defaults to no. Interactivity is detected from the
-terminal, so piping or running in CI declines everything rather than hanging.
-
-It bootstraps what a new Mac lacks: Xcode Command Line Tools (a GUI installer,
-so it waits for you), Homebrew, and oh-my-zsh.
+On a new Mac it first installs the Xcode Command Line Tools (a GUI installer,
+so it waits for you), then Homebrew. With no terminal, as in CI or a pipe,
+it declines every group and does not hang.
 
 ## What gets installed
 
 ### Shell tooling
 
-Installed: `eza` (ls) `bat` (cat) `btop` (top) `ripgrep` (grep) `fzf` `jq` `gh`
+Installed: `eza` (ls), `bat` (cat), `btop` (top), `ripgrep`, `fzf`, `jq`, `gh`.
+Ready but commented out in the Brewfile: `git-delta`, `fd`, `zoxide`, `direnv`,
+`lazygit`, `trash`. Remove the `#` and run `brew bundle`. The alias or hook
+activates in the next shell.
 
-Every alias is guarded on the binary existing, so a missing tool leaves the
-plain command alone — the same file works on a machine that has none of them.
-
-Aliases that change a real command (`ls`→eza, `cat`→bat, `cp -i`, …) apply only
-when a person is at a terminal. Scripts, CI and AI agents get the plain
-commands, because eza and bat reject flags like `ls -ltr` and `cat -v`, and
-`cp -i` fails with no terminal. `rg` is not aliased to `grep`: `rg -r` means
-`--replace`.
-
-Six more are listed commented in the Brewfile: `git-delta`, `fd`, `zoxide`,
-`direnv`, `lazygit`, `trash`. Each already has a guarded alias or hook waiting;
-uncomment, run `brew bundle`, and it activates on the next shell.
+- Every alias checks that its tool is installed, so the same file works on a
+  machine that has none of them.
+- Aliases that change a real command (`ls`→eza, `cat`→bat, `cp -i`) apply only
+  when a person is at a terminal. Scripts, CI and AI agents get the plain
+  commands: eza and bat reject flags like `ls -ltr` and `cat -v`, and `cp -i`
+  fails with no terminal.
+- `grep` is not aliased to `rg`, because `rg -r` means `--replace`.
 
 ### Node
 
-[`fnm`](https://github.com/Schniz/fnm). It reads `.nvmrc`: `cd` into a project
-and it switches version, `cd` out and it returns to the default. The installer
-sets the current LTS as the default.
+[fnm](https://github.com/Schniz/fnm) reads `.nvmrc`. `cd` into a project and
+it switches the version; `cd` out and it goes back to the default.
 
 ```bash
 fnm install 22        # add a version
-fnm default 24        # what scripts and non-project shells use
+fnm default 24        # used by scripts and shells outside a project
 fnm ls                # what is installed
 ```
 
-It replaced nvm, which had to source `nvm.sh` (~1s) for every shell opened
-inside a project. fnm does the same switch in a few ms.
-
-`mise` is deliberately not used. Its value is managing Python/Go/Ruby alongside
-Node, and this is a Node-only machine.
+fnm replaced nvm, which added about 1 s to every shell opened in a project.
+npm has a 2-day release cooldown (`min-release-age`), and pnpm has its own.
 
 ### AI agents
 
-`opencode` and `claude-code` as CLIs; Claude desktop, opencode-desktop,
-superwhisper and ollama as apps. Each authenticates on first run — no API key
-is stored in this repo.
+- **CLIs:** `claude-code` and `opencode`.
+- **Apps:** Claude, opencode-desktop, superwhisper and ollama.
+- **Login:** each agent logs in on first run. No API key is in this repo.
 
-`herdr` and `pi` are not in brew; the Brewfile notes how to install them.
+Claude Code permissions (`claude/settings.json`):
+
+- **Deny:** reading secrets (`.env`, keys, `~/.ssh`, `~/.aws`), editing shell
+  and Claude config in `~`, and `git push`.
+- **Ask:** edits to the linked config in this repo, `npx`, and `gh api`
+  write calls.
+- **Allow:** common read-only commands.
+- **Hook:** `claude/hooks/git-readonly.py` approves read-only `git -C <dir> …`
+  commands, which permission rules cannot match safely.
+- **Modes:** `acceptEdits` is the default, and bypass mode is off.
 
 ### CLI
 
@@ -133,14 +168,12 @@ is stored in this repo.
 |---|---|
 | Browsers | Brave, Chrome, Firefox, Helium |
 | Editors | VS Code, Zed, Ghostty, JetBrains Mono |
-| Dev | OrbStack, TablePlus, MongoDB Compass, DBeaver, Cyberduck, ngrok, Android platform tools, Temurin 8/17/latest, tflint |
+| Dev | OrbStack, TablePlus, MongoDB Compass, DBeaver, Cyberduck, ngrok, Android platform tools, Temurin, tflint |
 | Productivity | Raycast, Obsidian, Raindrop, Paseo, Tiles, HiddenBar, AltTab, Marta, AppCleaner, The Unarchiver, drawio, Jotter |
+| System | BetterDisplay, MonitorControl, Stats, coconutBattery, Flux, YubiKey Authenticator, Tailscale |
 | Media | VLC |
-| System | BetterDisplay, MonitorControl, Stats, coconutBattery, Flux, YubiKey Authenticator |
 
-### Personal apps
-
-`Brewfile.personal`, asked about separately so a work Mac can skip it.
+`Brewfile.personal` is asked about separately, so a work Mac can skip it:
 
 | Group | Apps |
 |---|---|
@@ -149,55 +182,63 @@ is stored in this repo.
 | 3D and imaging | BambuStudio, OrcaSlicer, OpenSCAD, RPi Imager, balenaEtcher |
 | Homelab | hidapi, minicom, nut, smartmontools, telnet, Home Assistant, AnyDesk, Firebird |
 
-### Linux
+### Turning apps on and off
 
-40 apt packages:
+Put `#` in front of a Brewfile line to turn it off, or remove the `#` to turn
+it on. Then:
 
-| Group | Packages |
+```bash
+git pull && brew bundle          # add --file=Brewfile.personal if used
+cat Brewfile Brewfile.personal | brew bundle cleanup --file=-   # installed, not listed
+```
+
+A `#` stops future installs. It does not uninstall.
+
+### Install by hand
+
+| App | Why |
 |---|---|
-| Base | zsh, git, curl, wget, gnupg, openssh-server, build-essential |
-| Editors | tmux, vim, neovim, less |
-| Inspection | htop, btop, ncdu, tree, jq |
-| Shell tooling | eza, bat, fd-find, ripgrep, fzf |
-| Python | python3, python3-pip, python3-venv, pipx |
-| Network | dnsutils, ping, netcat, traceroute, nmap, net-tools |
-| Desktop | xclip, xdotool |
+| Numbers, Pages, Xcode | App Store: `mas` needs a signed-in account (lines are in the Brewfile, commented) |
+| Whisper Lite | my own app |
+| Screendrop, SafeNet, CuaDriver | not in brew |
+| herdr, pi | not in brew; the Brewfile has the commands |
 
-Linux runs zsh and oh-my-zsh, exactly as the Mac does — there is no bash config
-here.
+## Security
 
-`linux/input/` covers what BetterTouchTool would do on a Mac, split three ways:
+`./install.sh harden` is for a Mac with no MDM. It checks each item first and
+asks only about what is not in place:
 
-| Need | Tool |
+| Item | Why |
 |---|---|
-| Trackpad gestures | `libinput-gestures` — 3-finger workspace swipe, 4-finger overview |
-| Cmd+C / Cmd+V everywhere | [Toshy](https://github.com/RedBearAK/toshy) — app-aware, so Ctrl+C still sends SIGINT in a terminal |
-| Natural scrolling | `mac-trackpad-scroll.sh`, autostarted |
-| Window snapping | XFCE, built in (Super + arrows) |
+| FileVault | Nothing else stores the recovery key, so save it in your password manager. |
+| Firewall and stealth mode | No reply to probes on office and public Wi-Fi. |
+| Touch ID for `sudo` | Uses `/etc/pam.d/sudo_local`, which macOS updates keep. |
+| sshd keys only | No passwords, no root, only your user. It is checked with `sshd -t` and removed if the check fails. |
 
-`install.sh` places the gesture config and the scroll autostart. Toshy and the
-`hid_apple fnmode=2` F-key fix need their own installers and a reboot — see
-`linux/input/README.md`.
+Turn on Screen Sharing and Remote Login by hand (System Settings > General >
+Sharing), and only while you need them. Use them over Tailscale.
+`./install.sh status` shows if they are on.
 
-Two things bite here: the `input` group only applies at the **next login**, so
-gestures are silently dead until then, and Toshy needs a logout rather than a
-new terminal.
+Secrets are never in this repo. SSH keys and passwords are in Bitwarden. The
+pre-commit hook and CI scan every commit with
+[betterleaks](https://github.com/betterleaks/betterleaks).
 
 ## macOS settings
 
-Applied by `macos/defaults.sh`. Preview with `./macos/defaults.sh --dry`, which
-prints every change and touches nothing. Log out for the keyboard and trackpad
-settings to take effect.
+`macos/defaults.sh` applies these. `./macos/defaults.sh --dry` shows each change
+and touches nothing. It compares each value first, so `--dry` is also a drift
+report. Log out for the keyboard and trackpad settings to take effect.
 
-Values marked *captured* were read from this machine; the rest are chosen
-defaults.
+<details>
+<summary><b>All settings</b></summary>
 
-### Text input
+*Captured* values were read from my Mac. The others are chosen defaults.
 
-All five are **on by default and actively corrupt code** — smart quotes turn
-`"` into a curly pair, smart dashes turn `--` into an em dash, and autocorrect
-rewrites identifiers. Anything typed or pasted through a Cocoa text field is
-affected.
+#### Text input
+
+All five are on by default and break code. Smart quotes change `"` to a
+curly pair, smart dashes change `--` to an em dash, and autocorrect rewrites
+identifiers.
 
 | Setting | Value |
 |---|---|
@@ -207,253 +248,185 @@ affected.
 | `NSAutomaticCapitalizationEnabled` | false |
 | `NSAutomaticPeriodSubstitutionEnabled` | false |
 
-Override per app if you want autocorrect back somewhere:
+To get autocorrect back in one app:
 
 ```bash
 defaults write md.obsidian NSAutomaticSpellingCorrectionEnabled -bool true
 ```
 
-### Pointer and keyboard
+#### Pointer and keyboard
 
 | Setting | Value | Effect |
 |---|---|---|
-| `com.apple.mouse.scaling` | 1.5 | mouse tracking speed *(captured)* |
-| `com.apple.trackpad.scaling` | 0.875 | trackpad tracking speed *(captured)* |
-| `com.apple.swipescrolldirection` | false | **natural scrolling off** *(captured)* |
-| `AppleKeyboardUIMode` | 3 | tab reaches every control, not just text fields |
+| `com.apple.mouse.scaling` | 1.5 | mouse speed *(captured)* |
+| `com.apple.trackpad.scaling` | 0.875 | trackpad speed *(captured)* |
+| `com.apple.swipescrolldirection` | false | natural scrolling off *(captured)* |
+| `AppleKeyboardUIMode` | 3 | Tab moves to every control |
 | `InitialKeyRepeat` | 15 | delay before a held key repeats |
-| `KeyRepeat` | 2 | repeat rate once going |
+| `KeyRepeat` | 2 | repeat rate |
 | `ApplePressAndHoldEnabled` | false | key repeat instead of the accent picker |
 | `AppleMultitouchTrackpad Clicking` | true | tap to click |
 | `TrackpadThreeFingerDrag` | false | three-finger drag off *(captured)* |
 
-### Finder
+#### Finder
 
 | Setting | Value | Effect |
 |---|---|---|
 | `AppleShowAllFiles` | true | show dotfiles |
-| `AppleShowAllExtensions` | true | never hide a file extension |
+| `AppleShowAllExtensions` | true | show every file extension |
 | `ShowPathbar` / `ShowStatusBar` | true | path and status bars |
-| `FXPreferredViewStyle` | `Nlsv` | list view everywhere |
-| `FXEnableExtensionChangeWarning` | false | no nag when renaming `.txt` to `.md` |
+| `FXPreferredViewStyle` | `Nlsv` | list view |
+| `FXEnableExtensionChangeWarning` | false | no warning when you change an extension |
 | `_FXSortFoldersFirst` | true | folders above files |
-| `FXDefaultSearchScope` | `SCcf` | search the current folder, not the whole Mac |
+| `FXDefaultSearchScope` | `SCcf` | search the current folder |
 | `_FXShowPosixPathInTitle` | true | full path in the title bar |
 | `DSDontWriteNetworkStores` | true | no `.DS_Store` on network shares |
 | `DSDontWriteUSBStores` | true | no `.DS_Store` on USB drives |
 
-### Dock
+#### Dock
 
 | Setting | Value | Effect |
 |---|---|---|
-| `autohide` | true | hidden until hovered |
-| `autohide-delay` | 0 | appears immediately |
-| `autohide-time-modifier` | 0 | instant slide (0.5 is *slower* than stock) |
+| `autohide` | true | hidden until you point at it |
+| `autohide-delay` | 0 | shows at once |
+| `autohide-time-modifier` | 0 | no slide animation |
 | `expose-animation-duration` | 0.1 | faster Mission Control |
 | `tilesize` | 48 | icon size |
-| `show-recents` | false | no recent-apps section |
-| `mru-spaces` | false | stop spaces reordering themselves |
+| `show-recents` | false | no recent apps |
+| `mru-spaces` | false | Spaces keep their order |
 
-Dock **contents** are separate — see `macos/dock.txt` and `macos/dock.sh`.
+Dock contents are in `macos/dock.txt`, applied by `macos/dock.sh`.
 
-### Screenshots
+#### Screenshots
 
 | Setting | Value |
 |---|---|
 | `location` | `~/Desktop/Screenshots` |
 | `type` | png |
 | `disable-shadow` | true |
-| `show-thumbnail` | false | no floating preview blocking the screen |
+| `show-thumbnail` | false |
 
-### System
+#### System
 
 | Setting | Value | Effect |
 |---|---|---|
-| `controlcenter BatteryShowPercentage` | true | battery percentage — needs `-currentHost` |
-| `NSDisableAutomaticTermination` | true | macOS stops quitting idle apps |
+| `controlcenter BatteryShowPercentage` | true | battery percentage (needs `-currentHost`) |
+| `NSDisableAutomaticTermination` | true | macOS does not quit idle apps |
 | `CrashReporter DialogType` | none | no crash dialogs |
 | `NSDocumentSaveNewDocumentsToCloud` | false | save to disk, not iCloud |
 | `NSNavPanelExpandedStateForSaveMode` | true | save panel opens expanded |
 | `PMPrintingExpandedStateForPrint` | true | print panel opens expanded |
 
-### Deliberately not set
+#### Not set, on purpose
 
-- **`LSQuarantine`** stays enabled. Disabling it removes the "downloaded from
-  the internet" check, which is a real malware guard on a daily driver. The
-  `unquarantine` alias handles the occasional unnotarised binary instead.
-- **`pmset` sleep settings** — suit an always-on box, not a laptop.
-- **Hot corners, TCC grants, login items** — Apple removed or never provided a
-  scriptable path. These are permanently manual.
-- **Screensaver password** (`com.apple.screensaver askForPassword`) — the key no
-  longer exists on Tahoe. Use `sysadminctl -screenLock immediate -password -`.
-- **`com.apple.menuextra.battery`** — a dead domain since Big Sur. The working
-  key is `com.apple.controlcenter BatteryShowPercentage`, set above.
-- **`killall cfprefsd`** — it is the preferences daemon, and killing it can drop
-  writes still sitting in its cache.
+- **`LSQuarantine`** stays on. It is the "downloaded from the internet" check,
+  a real malware guard. The `unquarantine` alias handles the occasional
+  unnotarised binary.
+- **`pmset` sleep settings** suit an always-on box, not a laptop.
+- **Hot corners, privacy permissions, login items:** macOS has no script
+  method for these.
+- **Screensaver password:** the key is gone on Tahoe. Use
+  `sysadminctl -screenLock immediate -password -`.
+- **`killall cfprefsd`** can lose writes that are still in its cache.
 
-`macos/defaults.sh` compares each value before writing, so `--dry` is a drift
-report rather than a transcript: it prints `same:` for what already matches and
-`set: old -> new` for what would change.
+A `defaults write` that returns 0 does not prove the setting works. Many keys
+still write to a plist that nothing reads. If a setting does nothing, check
+it in System Settings.
 
-> `defaults write` returning 0 does **not** mean the setting took effect. Many
-> keys still write cleanly to a plist that nothing reads any more. If a setting
-> appears to do nothing, verify it in System Settings rather than trusting the
-> exit code.
+</details>
 
 ## zsh
 
-`shared/zshrc.common` holds the shell core; `macos/.zshrc` and `linux/.zshrc`
-add only what differs. Theme is `robbyrussell`.
+`shared/zshrc.common` is the shell core. `macos/.zshrc` and `linux/.zshrc` add
+only what is different. The theme is `robbyrussell`.
 
 | Plugin | Gives you |
 |---|---|
-| `git` | ~150 aliases — `gst`, `gco`, `gd`, `gl` |
-| `z` | `z dotfi` jumps to a directory you visit often |
+| `git` | about 150 aliases: `gst`, `gco`, `gd`, `gl` |
+| `z` | `z dotfi` goes to a directory you use often |
 | `extract` | `x file.anything` unpacks any archive |
-| `command-not-found` | suggests the package providing a missing command |
-| `zsh-completions` | completions for tools that ship none |
-| `zsh-autosuggestions` | greys in a suggestion from history; `→` accepts |
-| `zsh-syntax-highlighting` | commands turn red when invalid — loads last |
+| `command-not-found` | shows the package for a missing command |
+| `zsh-completions` | completions for tools that have none |
+| `zsh-autosuggestions` | grey suggestion from history; `→` accepts |
+| `zsh-syntax-highlighting` | an invalid command turns red (loads last) |
 
-The first four ship with oh-my-zsh. The last three are cloned by step 5.
+The first four come with oh-my-zsh. Step 5 clones the other three.
 
-Aliases are split three ways: `shared/aliases.zsh` (portable),
-`macos/aliases.macos.zsh` (`defaults`, `lsof`, `brew`), and
-`linux/aliases.linux.zsh` (`apt`, `systemd`, `ss`). Where both OSes need the
-same idea with a different implementation — `ports`, `killport`, `localip` —
-each file defines its own; only one is ever loaded.
+Aliases are in three files: `shared/aliases.zsh`, `macos/aliases.macos.zsh` and
+`linux/aliases.linux.zsh`. A command such as `ports` or `killport` that works
+differently on each system is in each OS file, and only one file loads.
 
-A terminal opened at `$HOME` starts in `~/dev`. Editor and agent shells are
-excluded, since they open in a project directory on purpose.
+A terminal opened at `$HOME` starts in `~/dev`. Editor and agent shells open
+in their project, so they do not change directory.
 
-## Not installed
+<details>
+<summary><b>Linux</b></summary>
 
-Install these by hand:
+`linux/packages.txt` lists the apt packages: base tools, editors, eza, bat,
+fd, ripgrep, fzf, Python, network tools, and xclip. Linux uses the same zsh
+and oh-my-zsh as the Mac.
 
-| App | Why |
+`linux/input/` does what BetterTouchTool does on a Mac:
+
+| Need | Tool |
 |---|---|
-| Tailscale | App Store, in a `.localized` folder brew cannot match |
-| Numbers, Pages, Xcode, Home Assistant | App Store — need `mas` and a signed-in account |
-| Whisper Lite | your own app |
-| Screendrop, SafeNet, BulsatcomTV, CuaDriver | not in brew |
+| Trackpad gestures | [libinput-gestures](https://github.com/bulletmark/libinput-gestures): 3-finger workspace swipe, 4-finger overview |
+| Cmd+C / Cmd+V everywhere | [Toshy](https://github.com/RedBearAK/toshy): Ctrl+C still stops a command in a terminal |
+| Natural scrolling | `mac-trackpad-scroll.sh`, started at login |
+| Window snapping | XFCE (Super + arrows) |
 
-`mas list` returns nothing on this machine because Spotlight indexing is off
-and `mas` reads that index. The App Store lines in the Brewfile are commented
-with their public IDs — verify with `mas search <name>` before relying on them.
+The `input` group applies only at the next login, so gestures do not work
+until then. Toshy needs a logout. See `linux/input/README.md` and
+`docs/linux-setup.md`.
 
-## Obsidian
+</details>
 
-Settings live inside the vault, not `~/Library`, so they install into
-`$OBSIDIAN_VAULT` (default `~/Documents/obsidian/bbn`, overridable).
+<details>
+<summary><b>Obsidian</b></summary>
 
-Tracked: appearance, hotkeys, graph, daily-notes, templates, the two plugin
-lists, three CSS snippets, and the `mnml` theme manifest — 48K.
+Obsidian keeps its settings inside the vault, so they install into
+`$OBSIDIAN_VAULT` (default `~/Documents/obsidian/bbn`).
 
-Not tracked: plugin code and `theme.css` (340K on its own). Obsidian
-re-downloads both from `community-plugins.json` and the theme manifest when the
-vault is first opened.
+Tracked: appearance, hotkeys, graph, daily notes, templates, the plugin lists,
+CSS snippets and the theme manifest. Not tracked: plugin code and
+`theme.css`. Obsidian downloads them again when you first open the vault.
 
-## Hooks and CI
+</details>
 
-### Pre-commit secret scan
+## CI
 
-`.githooks/pre-commit` runs [betterleaks](https://github.com/betterleaks/betterleaks)
-(the gitleaks successor; it falls back to gitleaks if only that is installed)
-against the staged diff and refuses the commit if it finds a secret. Enabled by
-`install.sh`, or by hand:
-
-```bash
-git config core.hooksPath .githooks
-```
-
-That config step is the whole point: `.git/hooks/` is **not tracked by git**, so
-a hook committed to a repo does nothing until something points git at it. This
-repo went most of its life with the hook present in an old branch and never
-active.
-
-No husky, no `package.json` — `core.hooksPath` is native git and needs nothing
-installed. If neither scanner is installed the hook warns and allows the commit rather
-than blocking work; `git commit --no-verify` bypasses it in an emergency.
-
-GitHub push protection is not a substitute. It only catches vendor tokens with
-recognisable shapes, so it will miss an SSH private key, a `.env`, or any
-high-entropy string — which is most of the dotfiles risk. It also fires at push,
-by which point the secret is already in local history.
-
-### GitHub Actions
-
-`.github/workflows/ci.yml` runs on push, PR, and weekly.
+`.github/workflows/ci.yml` runs on push, on pull requests and every week.
 
 | Job | Runner | Does |
 |---|---|---|
 | `lint` | ubuntu | shellcheck, `zsh -n` on every shell file, betterleaks |
-| `linux` | ubuntu | `./install.sh -y`, then again for idempotence |
-| `macos` | macos | Brewfile parses, both `--dry` runs, formulae install, idempotence |
+| `linux` | ubuntu | `./install.sh -y` two times, link check, silent login shell, `.nvmrc` switch |
+| `macos` | macos | Brewfile parse, `--dry` runs, formulae install, the same checks as Linux |
 
-Three things the workflow does deliberately:
+- **Two install runs:** the second run must also pass. This proves that a
+  run can be repeated.
+- **Silent login shell:** `zsh -lic exit` must write nothing to stderr. This
+  finds broken rc files that nothing else shows.
+- **No casks on macOS:** about 50 GUI apps would exceed the time limit, and
+  that would test Homebrew, not this repo.
 
-- **Runs the installer twice.** A second run must succeed — that is what proves
-  idempotence, and it is cheap given the copy-plus-backup design.
-- **Asserts a silent login shell.** `zsh -lic exit` must print nothing to
-  stderr. This catches broken rc files nothing else surfaces; it is how the
-  `gc` alias collision was found.
-- **Skips casks on macOS.** ~50 GUI apps would exceed the timeout and would be
-  testing Homebrew rather than this repo. It also deletes the runner's
-  preinstalled Firefox and Chrome first, since brew refuses to install a cask
-  over an existing app.
+## Credits
 
-The Homebrew **download** cache is cached; the Cellar deliberately is not.
-Restoring a Cellar over the runner's own Homebrew leaves kegs
-present-but-unregistered and breaks `brew bundle`. The weekly run skips the
-cache entirely to simulate a genuinely fresh machine.
+Built on:
+- [oh-my-zsh](https://github.com/ohmyzsh/ohmyzsh)
+- the [zsh-users](https://github.com/zsh-users) plugins
+- [fnm](https://github.com/Schniz/fnm)
+- [Homebrew](https://brew.sh)
+- [betterleaks](https://github.com/betterleaks/betterleaks)
+- [Ghostty](https://ghostty.org)
 
-## Secrets
+References for the macOS settings and the layout:
+- [mathiasbynens/dotfiles](https://github.com/mathiasbynens/dotfiles) and its `.macos`
+- [macos-defaults.com](https://macos-defaults.com)
+- [holman/dotfiles](https://github.com/holman/dotfiles)
+- [thoughtbot/dotfiles](https://github.com/thoughtbot/dotfiles)
+- [awesome-dotfiles](https://github.com/webpro/awesome-dotfiles)
 
-None in this repo. SSH keys and passwords live in Bitwarden; each AI agent
-authenticates on first run.
+## License
 
-Raycast's `config.json` is deliberately excluded — it holds an access token
-and no actual settings. Also excluded: `gh/hosts.yml` and `herdr/session.json`,
-both of which carry live credentials.
-
-## Day to day
-
-```bash
-./install.sh                    # re-run any group after editing a file
-git config core.hooksPath .githooks        # enable the secret scan once per clone
-./macos/defaults.sh --dry       # preview system preference changes
-brew bundle                     # install what Brewfile lists
-brew bundle --file=Brewfile.personal
-```
-
-### Turning apps on and off
-
-Both Brewfiles sit in the repo root. Put `#` in front of a line to turn it
-off, remove the `#` to turn it on, then:
-
-```bash
-git pull && brew bundle         # add Brewfile.personal the same way if used
-```
-
-Commenting a line out stops future installs; it does not uninstall. To see
-what is installed but no longer listed, check both files together:
-
-```bash
-cat Brewfile Brewfile.personal | brew bundle cleanup --file=-
-```
-
-To update the repo from the machine, copy the file back and commit — the
-install direction is repo → `~`, never the reverse.
-
-## Notes
-
-- `shared/zshrc.common` holds everything identical between the two `.zshrc`
-  files, so a shell fix is made once.
-- `plugins=` must be set before `oh-my-zsh.sh` is sourced or the list is
-  ignored. Both configs had that wrong before.
-- PATH is one `path=()` block with `typeset -U`; re-sourcing cannot stack
-  duplicates.
-- macOS ships bash 3.2 and never updates it, so every script here is 3.2
-  compatible: no associative arrays, no `mapfile`.
-- Natural scrolling is **off** on the Mac and **on** on the Linux box. The two
-  disagree deliberately; that setting cannot live in `shared/`.
+[MIT](LICENSE)
