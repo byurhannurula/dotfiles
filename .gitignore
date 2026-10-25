@@ -8,6 +8,9 @@
 scripts/
 capture-*/
 
+# ---- local notes and research: kept on this machine, never published ------
+notes/
+
 # ---- key material — never, under any circumstance ---------------------------
 id_rsa
 id_dsa
