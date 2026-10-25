@@ -27,7 +27,6 @@ linux/
   input/                gestures, Mac-style keys, natural scrolling
 claude/                 CLAUDE.md, settings.json, statusline
 docs/                   packages.md, linux-setup.md
-_legacy/                the previous repo and every earlier .zshrc
 ```
 
 ## Usage
