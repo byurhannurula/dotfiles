@@ -22,3 +22,8 @@
 	gpgsign = true
 [gpg "ssh"]
 	allowedSignersFile = ~/.config/git/allowed_signers
+
+# Last, so it wins: per-machine values (work email, a different key) that
+# must not reach the shared, linked file. A missing file is ignored.
+[include]
+	path = ~/.gitconfig.local
