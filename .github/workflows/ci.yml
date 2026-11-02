@@ -24,7 +24,7 @@ jobs:
       - name: shellcheck
         run: |
           sudo apt-get update -qq && sudo apt-get install -y shellcheck
-          shellcheck -S warning install.sh status.sh ssh-setup.sh macos/*.sh .githooks/pre-commit
+          shellcheck -S warning install.sh status.sh ssh-setup.sh macos/*.sh lib/*.sh .githooks/pre-commit
 
       - name: zsh syntax
         run: |

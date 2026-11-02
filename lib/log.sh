@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # lib/log.sh — sourced by the setup scripts, not run.
 #
 # Copies everything a script prints to ~/.dotfiles.backup/logs/, so a run on

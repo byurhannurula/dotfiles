@@ -11,6 +11,10 @@
 set -uo pipefail
 cd "$(dirname "$0")" || exit 1
 
+# shellcheck source=lib/log.sh
+. lib/log.sh
+start_log status "$@"
+
 case "$(uname -s)" in
   Darwin) OS=macos ;;
   Linux)  OS=linux ;;
@@ -174,33 +178,33 @@ if [ "$OS" = macos ]; then
     yes_ "macOS updates" "none pending"
   fi
 
-  # The app's own binary is the CLI. It is not on PATH, and the app can sit
-  # one folder down (Tailscale.localized/) after an update.
-  TS=$(command -v tailscale 2>/dev/null)
-  for a in /Applications/Tailscale.app /Applications/*/Tailscale.app; do
-    [ -n "$TS" ] && break
-    [ -x "$a/Contents/MacOS/Tailscale" ] && TS="$a/Contents/MacOS/Tailscale"
-  done
-  if [ -n "$TS" ]; then
-    tsv=$("$TS" version 2>/dev/null | head -1)
+  # shellcheck source=lib/tailscale.sh
+  . lib/tailscale.sh
+  if ts_find; then
+    tsv=$(ts_version)
     # TS-2026-014..017 (Tailscale SSH and Serve) are fixed in 1.104.4.
     if awk -v a="$tsv" 'BEGIN { split(a, x, "."); split("1.104.4", y, ".");
          for (i = 1; i <= 3; i++) { if (x[i]+0 > y[i]+0) exit 0; if (x[i]+0 < y[i]+0) exit 1 } exit 0 }'; then
       yes_ "Tailscale" "$tsv"
     else
-      no_ "Tailscale" "$tsv: update to 1.104.4+ (TS-2026-014..017)"
+      no_ "Tailscale" "${tsv:-unknown}: update to 1.104.4+ (TS-2026-014..017)"
     fi
-    "$TS" status --json 2>/dev/null | grep -q '"BackendState": "Running"' \
-      && row "  connection" "connected" || row "  connection" "not connected"
-    prefs=$("$TS" debug prefs 2>/dev/null)
-    echo "$prefs" | grep -q '"RunSSH": true' \
-      && no_ "  Tailscale SSH" "on: tailscale set --ssh=false" || yes_ "  Tailscale SSH" "off"
-    { "$TS" serve status 2>&1; "$TS" funnel status 2>&1; } | grep -qv 'No serve config' \
-      && diff_ "  Serve / Funnel" "on: tailscale serve reset" || yes_ "  Serve / Funnel" "off"
-    echo "$prefs" | grep -q '"ShieldsUp": true' \
-      && row "  shields up" "on (no incoming)" || row "  shields up" "off (policy decides)"
-    echo "$prefs" | grep -qE '"ExitNodeID": "[^"]+"' \
-      && row "  exit node" "in use" || row "  exit node" "none"
+    if ! ts_running; then
+      diff_ "  app" "not running: open Tailscale once and allow its extension"
+    else
+      ts_run status --json | grep -q '"BackendState": "Running"' \
+        && row "  connection" "connected" || row "  connection" "not connected"
+      prefs=$(ts_run debug prefs)
+      echo "$prefs" | grep -q '"RunSSH": true' \
+        && no_ "  Tailscale SSH" "on: tailscale set --ssh=false" || yes_ "  Tailscale SSH" "off"
+      # serve status covers Funnel too: Funnel is a flag on a serve entry.
+      ts_run serve status | grep -qv 'No serve config' \
+        && diff_ "  Serve / Funnel" "on: tailscale serve reset" || yes_ "  Serve / Funnel" "off"
+      echo "$prefs" | grep -q '"ShieldsUp": true' \
+        && row "  shields up" "on (no incoming)" || row "  shields up" "off (policy decides)"
+      echo "$prefs" | grep -qE '"ExitNodeID": "[^"]+"' \
+        && row "  exit node" "in use" || row "  exit node" "none"
+    fi
   else
     no_ "Tailscale" "brew install --cask tailscale-app"
   fi

@@ -137,14 +137,13 @@ else
   warn "Remote Login is off: System Settings > General > Sharing"
 fi
 
-TS=$(command -v tailscale 2>/dev/null)
-for a in /Applications/Tailscale.app /Applications/*/Tailscale.app; do
-  [ -n "$TS" ] && break
-  [ -x "$a/Contents/MacOS/Tailscale" ] && TS="$a/Contents/MacOS/Tailscale"
-done
-if [ -z "$TS" ]; then
+# shellcheck source=../lib/tailscale.sh
+. ../lib/tailscale.sh
+if ! ts_find; then
   warn "Tailscale not installed"
-elif "$TS" debug prefs 2>/dev/null | grep -q '"ShieldsUp": true'; then
+elif ! ts_running; then
+  warn "Tailscale is not running: open it once, allow its extension, sign in"
+elif ts_run debug prefs | grep -q '"ShieldsUp": true'; then
   warn "Tailscale Shields Up is on: nothing can connect. Turn it off: tailscale set --shields-up=false"
 else
   ok "Tailscale accepts connections (the tailnet policy decides who)"
