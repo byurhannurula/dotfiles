@@ -20,8 +20,8 @@ One repo, linked into `~`, kept in sync with git.
 ## Quick start
 
 ```bash
-git clone git@github.com:byurhannurula/dotfiles.git ~/dev/dotfiles
-cd ~/dev/dotfiles
+git clone git@github.com:byurhannurula/dotfiles.git ~/.dotfiles
+cd ~/.dotfiles
 ./install.sh            # asks before each group, defaults to no
 ./install.sh status     # what this machine has, compared with the repo
 ./install.sh harden     # macOS security settings (sudo, asks each)
