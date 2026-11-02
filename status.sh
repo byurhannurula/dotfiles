@@ -105,16 +105,27 @@ done
 head_ "Git and SSH"
 if [ "$CLT" -eq 1 ]; then
   row "user" "$(git config --global user.name) <$(git config --global user.email)>"
-  if [ "$(git config --global commit.gpgsign)" = true ]; then
-    key=$(git config --global user.signingkey)
+  # --includes: --global alone skips ~/.gitconfig.local, where per-machine
+  # signing values live.
+  gc() { git config --global --includes "$@"; }
+  if [ "$(gc commit.gpgsign)" = true ]; then
+    key=$(gc user.signingkey)
     key=${key/#\~/$HOME}
-    [ -f "$key" ] && yes_ "commit signing" "$(git config --global gpg.format) ${key/#$HOME/~}" \
-                  || no_ "commit signing" "key missing: $key"
+    if [ ! -f "$key" ]; then
+      no_ "commit signing" "key missing: $key — every commit fails: ./install.sh ssh"
+    else
+      yes_ "commit signing" "$(gc gpg.format) ${key/#$HOME/~}"
+      signers=$(gc gpg.ssh.allowedSignersFile); signers=${signers/#\~/$HOME}
+      grep -qF "$(awk '{print $2}' "$key")" "$signers" 2>/dev/null \
+        && yes_ "allowed_signers" "has the signing key" \
+        || diff_ "allowed_signers" "missing the signing key: ./install.sh ssh"
+    fi
   else
-    no_ "commit signing" "commit.gpgsign is not true"
+    diff_ "commit signing" "off on this machine"
   fi
   pub=$(ls "$HOME"/.ssh/id_*.pub 2>/dev/null | head -1)
-  [ -n "$pub" ] && yes_ "ssh key" "${pub/#$HOME/~}" || no_ "ssh key" "copy from Bitwarden or ssh-keygen -t ed25519"
+  [ -n "$pub" ] && yes_ "ssh key" "${pub/#$HOME/~}" || no_ "ssh key" "./install.sh ssh"
+  row "" "details: ./install.sh ssh status"
   [ "$(git config core.hooksPath)" = .githooks ] && yes_ "repo hooks" "secret scan pre-commit" \
     || no_ "repo hooks" "run: git config core.hooksPath .githooks"
 else

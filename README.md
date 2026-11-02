@@ -28,6 +28,7 @@ cd ~/dev/dotfiles
 ./install.sh harden --undo         # reverse them, one by one
 ./macos/defaults.sh --undo <file>  # restore the system settings a run replaced
 ./install.sh always-on  # Mac left at a desk, reached over Tailscale (asks each)
+./install.sh ssh        # SSH key, GitHub upload, commit signing (asks each)
 ```
 
 `install.sh` finds macOS or Linux from `uname` and picks the right files.
@@ -60,6 +61,7 @@ your shell.
 ```
 install.sh            setup: asks before each group
 status.sh             read-only report: system, tools, security, links
+ssh-setup.sh          SSH key, GitHub, commit signing, authorized_keys
 Brewfile              macOS base: CLI, dev tools, work-safe apps
 Brewfile.personal     macOS extras: chat, media, 3D printing, homelab
 shared/               config for both systems
@@ -100,9 +102,10 @@ Each step needs the ones before it on a fresh machine.
 | 4 | Dock contents | the apps in `macos/dock.txt`, in order | fast |
 | 5 | oh-my-zsh | the framework, 3 plugins, optional `chsh` | ~1 min |
 | 6 | shell config | links `.zshrc`, `.zshrc.common`, aliases, git | fast |
-| 7 | app config | links Ghostty, VS Code, Zed, btop; copies Obsidian | fast |
-| 8 | VS Code extensions | from `macos/vscode/extensions.txt` | ~2 min |
-| 9 | AI agents | links Claude and opencode config, then checks both CLIs | ~2 min |
+| 7 | SSH and signing | `ssh-setup.sh`: new or existing key, `~/.ssh/config`, signing, GitHub, test | ~2 min |
+| 8 | app config | links Ghostty, VS Code, Zed, btop; copies Obsidian | fast |
+| 9 | VS Code extensions | from `macos/vscode/extensions.txt` | ~2 min |
+| 10 | AI agents | links Claude and opencode config, then checks both CLIs | ~2 min |
 
 On a new Mac it first installs the Xcode Command Line Tools (a GUI installer,
 so it waits for you), then Homebrew. With no terminal, as in CI or a pipe,

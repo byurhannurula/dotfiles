@@ -9,6 +9,7 @@
 #   ./install.sh harden             # macOS security settings (sudo, asks each)
 #   ./install.sh harden --undo      # reverse them, one by one
 #   ./install.sh always-on          # desk Mac reached remotely (sudo, asks each)
+#   ./install.sh ssh                # SSH key, GitHub and commit signing
 #
 # Symlinks: ~/.zshrc and the rest point into this repo, so the repo is the
 # live config. Edits in ~ are git changes, and a git pull applies at once.
@@ -49,9 +50,10 @@ while [ $# -gt 0 ]; do
     status)     exec ./status.sh ;;
     harden)     shift; exec bash macos/harden.sh "$@" ;;
     always-on)  shift; exec bash macos/always-on.sh "$@" ;;
+    ssh)        shift; exec bash ./ssh-setup.sh "$@" ;;
     -y|--yes)   YES=1; shift ;;
     --hostname) HOSTNAME_NEW="${2:?--hostname needs a name}"; shift 2 ;;
-    -h|--help)  sed -n '3,16p' "$0"; exit 0 ;;
+    -h|--help)  sed -n '3,17p' "$0"; exit 0 ;;
     *) echo "unknown option: $1" >&2; exit 1 ;;
   esac
 done
@@ -116,19 +118,20 @@ echo
 
 # =============================================================================
 # Order matters on a fresh machine:
-#   1 defaults   before anything opens a window
-#   2 hostname   before certs and Tailscale see the old name
-#   3 packages   installs zsh, git, code, ghostty... everything below needs them
-#   4 oh-my-zsh  needs git from step 3
-#   5 shell      .zshrc references the plugins from step 4
-#   6 app config the apps exist only after step 3
-#   7 extensions needs the `code` binary from step 3
-#   4 dock       needs the apps from step 3 to exist (runs after 3)
-#   9 agents     last; independent of the rest
+#    1 defaults   before anything opens a window
+#    2 hostname   before certs and Tailscale see the old name
+#    3 packages   installs zsh, git, code, ghostty... everything below needs them
+#    4 dock       needs the apps from step 3 to exist
+#    5 oh-my-zsh  needs git from step 3
+#    6 shell      .zshrc references the plugins from step 5
+#    7 ssh        signing settings land on the .gitconfig linked in step 6
+#    8 app config the apps exist only after step 3
+#    9 extensions needs the `code` binary from step 3
+#   10 agents     last; independent of the rest
 # =============================================================================
 
 # ---- macOS defaults ---------------------------------------------------------
-if [ "$OS" = macos ] && ask "1/9  Apply macOS defaults (finder, dock, pointer, text input, siri, spotlight)?"; then
+if [ "$OS" = macos ] && ask "1/10  Apply macOS defaults (finder, dock, pointer, text input, siri, spotlight)?"; then
   bash macos/defaults.sh
 fi
 
@@ -138,7 +141,7 @@ fi
 # stray keystroke at a bare prompt would otherwise rename the machine.
 if [ -z "$HOSTNAME_NEW" ] && [ "$YES" -eq 0 ] && [ "$INTERACTIVE" -eq 1 ]; then
   current=$(hostname -s 2>/dev/null || hostname)
-  if ask "2/9  Change the hostname? (currently: $current)"; then
+  if ask "2/10  Change the hostname? (currently: $current)"; then
     printf '      new hostname: '
     read -r HOSTNAME_NEW
   fi
@@ -188,7 +191,7 @@ npm_cooldown() {
 
 # The first bash draft skipped this: actually install the software. The Brewfile is generated from a capture, so
 # it reflects what the machine really had, not a guess.
-if [ "$OS" = macos ] && ask "3/9  Install all packages and apps from Brewfile (slow)?"; then
+if [ "$OS" = macos ] && ask "3/10  Install all packages and apps from Brewfile (slow)?"; then
   # Nothing else can bootstrap Homebrew, and everything below depends on it.
   if ! command -v brew >/dev/null 2>&1; then
     say "installing Homebrew"
@@ -220,7 +223,7 @@ if [ "$OS" = macos ] && ask "3/9  Install all packages and apps from Brewfile (s
   fi
 fi
 
-if [ "$OS" = linux ] && ask "3/9  Install packages from linux/packages.txt?"; then
+if [ "$OS" = linux ] && ask "3/10  Install packages from linux/packages.txt?"; then
   if [ -f linux/packages.txt ]; then
     # strip comments and blank lines, install in one transaction
     pkgs=$(grep -vE '^\s*(#|$)' linux/packages.txt | tr '\n' ' ')
@@ -244,7 +247,7 @@ fi
 # Deliberately after the Brewfile step, unlike defaults.sh which runs first:
 # dock.sh skips apps that are not installed, so running it early would leave
 # an empty Dock.
-if [ "$OS" = macos ] && [ -z "$IS_CI" ] && ask "4/9  Set Dock contents from macos/dock.txt?"; then
+if [ "$OS" = macos ] && [ -z "$IS_CI" ] && ask "4/10  Set Dock contents from macos/dock.txt?"; then
   bash macos/dock.sh
 fi
 
@@ -266,7 +269,7 @@ fi
 # ---- oh-my-zsh plugins ------------------------------------------------------
 # Four plugins in plugins= are not bundled. Without them the shell still
 # works, but autosuggestions and syntax highlighting silently do nothing.
-if ask "5/9  Install oh-my-zsh and its plugins?"; then
+if ask "5/10  Install oh-my-zsh and its plugins?"; then
   ZC="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}"
 
   # On a fresh machine oh-my-zsh is not there yet. Install it unattended:
@@ -303,7 +306,7 @@ if ask "5/9  Install oh-my-zsh and its plugins?"; then
 fi
 
 # ---- shell ------------------------------------------------------------------
-if ask "6/9  Install shell config (.zshrc, aliases, git)?"; then
+if ask "6/10  Install shell config (.zshrc, aliases, git)?"; then
   link shared/zshrc.common "$HOME/.zshrc.common"
   link "$OS/.zshrc"        "$HOME/.zshrc"
   link shared/.zprofile    "$HOME/.zprofile"
@@ -322,8 +325,17 @@ if ask "6/9  Install shell config (.zshrc, aliases, git)?"; then
   ok "shell"
 fi
 
+# ---- ssh key and commit signing ----------------------------------------------
+# The shared .gitconfig turns signing on, so without a key every commit on a
+# new machine fails. ssh-setup.sh asks its own questions, so it needs a
+# terminal even under -y.
+if [ -z "$IS_CI" ] && [ "$INTERACTIVE" -eq 1 ] \
+   && ask "7/10  Set up the SSH key, GitHub and commit signing?"; then
+  bash ./ssh-setup.sh || fail "ssh setup did not finish; run ./install.sh ssh again"
+fi
+
 # ---- apps -------------------------------------------------------------------
-if ask "7/9  Install app config (ghostty, vscode, zed, btop, obsidian)?"; then
+if ask "8/10  Install app config (ghostty, vscode, zed, btop, obsidian)?"; then
   if [ "$OS" = macos ]; then
     link macos/ghostty/config "$HOME/Library/Application Support/com.mitchellh.ghostty/config"
     V="$HOME/Library/Application Support/Code/User"
@@ -370,7 +382,7 @@ fi
 
 # ---- vscode extensions ------------------------------------------------------
 # Captured with `code --list-extensions`, so this is what was really installed.
-if ask "8/9  Install VS Code extensions ($(wc -l < "$OS/vscode/extensions.txt" 2>/dev/null | tr -d ' ') of them)?"; then
+if ask "9/10  Install VS Code extensions ($(wc -l < "$OS/vscode/extensions.txt" 2>/dev/null | tr -d ' ') of them)?"; then
   if command -v code >/dev/null 2>&1; then
     while read -r ext; do
       case "$ext" in ''|\#*) continue ;; esac
@@ -388,7 +400,7 @@ fi
 # Config plus a check that the agents are actually there. The CLIs come from
 # the Brewfile in step 3; this catches a machine where that was skipped, and
 # handles the ones brew does not carry.
-if ask "9/9  Set up AI coding agents (config + verify)?"; then
+if ask "10/10  Set up AI coding agents (config + verify)?"; then
 
   # --- config ---
   link claude/CLAUDE.md             "$HOME/.claude/CLAUDE.md"

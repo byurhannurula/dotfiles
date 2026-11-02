@@ -115,6 +115,12 @@ One ed25519 key per machine, used for both GitHub auth and commit signing
 logged in the key is uploaded as both an auth and a signing key — **must be
 added twice**, they're separate lists.
 
+The shared `.gitconfig` names `~/.ssh/id_ed25519.pub`. A key with another
+name, such as `id_ed25519_github`, goes in `~/.gitconfig.local`
+(`git config --file ~/.gitconfig.local user.signingkey ...`), never
+`git config --global`: `~/.gitconfig` is a link into this repo.
+`./install.sh ssh` does this for you.
+
 ### 10 — dotfiles from this repo
 Copies `.zshrc .zshrc.linux .zprofile .gitconfig .bashrc .bash_profile
 .profile .gitignore_global` into `~`, and `aliases.zsh` into
