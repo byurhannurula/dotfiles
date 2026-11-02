@@ -47,7 +47,8 @@ brew "btop"             # top
 # =============================================================================
 # AI CODING AGENTS
 # The reason half of this machine exists. CLI agents first — they are what the
-# terminal config, tmux and the shell aliases are actually for.
+# terminal config and the shell aliases are actually for. Codex is left out on
+# purpose: only the agents in use are installed.
 # =============================================================================
 brew "opencode"              # open-source terminal agent
 cask "claude-code"           # Anthropic's terminal agent (the `claude` command)
@@ -55,13 +56,17 @@ cask "claude-code"           # Anthropic's terminal agent (the `claude` command)
 # Desktop apps
 cask "claude"                # Claude desktop
 cask "opencode-desktop"
+# One UI and phone remote for claude and opencode; uses the CLIs above and
+# installs no agent of its own. Pair over the tailnet address, not
+# `t3 pair --tailscale`: that turns on Tailscale Serve. See tailscale/.
+cask "t3-code"
 cask "superwhisper"          # local speech-to-text
 cask "ollama-app"            # local models
 
 # Not in brew — install by hand if you want them:
 #   herdr    curl -fsSL https://herdr.dev/install.sh | sh
 #            agent runtime that owns the terminals; sessions survive a reboot.
-#            Young software. tmux stays installed as the fallback.
+#            Tried and skipped; tmux is the same idea and is not installed.
 #   pi       npm i -g @earendil-works/pi-coding-agent
 
 # =============================================================================

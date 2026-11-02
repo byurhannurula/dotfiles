@@ -25,6 +25,9 @@ cd ~/dev/dotfiles
 ./install.sh            # asks before each group, defaults to no
 ./install.sh status     # what this machine has, compared with the repo
 ./install.sh harden     # macOS security settings (sudo, asks each)
+./install.sh harden --undo         # reverse them, one by one
+./macos/defaults.sh --undo <file>  # restore the system settings a run replaced
+./install.sh always-on  # Mac left at a desk, reached over Tailscale (asks each)
 ```
 
 `install.sh` finds macOS or Linux from `uname` and picks the right files.
@@ -67,8 +70,10 @@ shared/               config for both systems
 macos/
   .zshrc                PATH and Homebrew; sources zshrc.common
   aliases.macos.zsh     defaults, lsof, brew, Rosetta
-  defaults.sh           system settings (--dry to preview)
-  harden.sh sshd/       FileVault, firewall, Touch ID sudo, sshd keys-only
+  defaults.sh           system settings, Siri and Spotlight off (--dry, --undo)
+  harden.sh sshd/       FileVault, firewall, screen lock, Spotlight index,
+                        Touch ID sudo, sshd keys-only (--undo)
+  always-on.sh          desk Mac: no sleep on the charger, manual updates (--undo)
   ghostty/ vscode/ zed/ btop/ obsidian/
 linux/
   .zshrc                PATH and clipboard shims; sources zshrc.common
@@ -76,12 +81,12 @@ linux/
   packages.txt          apt packages
   input/                gestures, Mac-style keys, natural scrolling
 claude/                 CLAUDE.md, settings.json, statusline, hooks/
+tailscale/              policy templates for the personal and work tailnets
 docs/                   linux-setup.md
 ```
 
 Older config (fish, iTerm, the old VS Code setup, every earlier `.zshrc`) is
-on the [`legacy`](../../tree/legacy) branch. The nix-darwin attempt is on
-[`nix`](../../tree/nix).
+on the [`legacy`](../../tree/legacy) branch.
 
 ## What install.sh does, in order
 

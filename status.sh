@@ -139,13 +139,78 @@ if [ "$OS" = macos ]; then
   for p in 22:"Remote Login" 5900:"Screen Sharing"; do
     echo "$listening" | grep -q "\.${p%%:*} " && diff_ "${p#*:}" "on (port ${p%%:*})" || row "${p#*:}" "off"
   done
-  if has tailscale; then
-    tailscale status >/dev/null 2>&1 && yes_ "Tailscale" "connected" || diff_ "Tailscale" "installed, not connected"
-  elif [ -d /Applications/Tailscale.app ]; then
-    diff_ "Tailscale" "app installed; CLI not on PATH"
+  echo "$listening" | grep -q '\.445 ' && diff_ "File Sharing (SMB)" "on (port 445)" || row "File Sharing (SMB)" "off"
+  "$fw" --getallowsigned 2>/dev/null | grep -q 'downloaded signed software ENABLED' \
+    && diff_ "downloaded signed apps" "accept connections unasked: ./install.sh harden" \
+    || yes_ "downloaded signed apps" "must ask"
+  lock=$(sysadminctl -screenLock status 2>&1 | grep -oE 'immediate|off|[0-9]+ seconds' | tail -1)
+  case "$lock" in
+    immediate|[0-5]\ seconds) yes_ "screen lock" "$lock" ;;
+    *) diff_ "screen lock" "${lock:-unknown}: ./install.sh harden" ;;
+  esac
+  # A dev server on *: is reachable by everything on the same Wi-Fi.
+  # AirPlay (ControlCenter) and Continuity (rapportd) are expected.
+  lsof -nP -iTCP -sTCP:LISTEN 2>/dev/null \
+    | awk '$9 ~ /^\*:/ && $1 !~ /^(ControlCe|rapportd)/ {print $1, $9}' | sort -u \
+    | while read -r cmd addr; do diff_ "open to the network" "$cmd on $addr (bind 127.0.0.1 instead)"; done
+  SU=/Library/Preferences/com.apple.SoftwareUpdate
+  n=$(defaults read "$SU" LastRecommendedUpdatesAvailable 2>/dev/null || echo 0)
+  if [ "${n:-0}" -gt 0 ]; then
+    no_ "macOS updates" "$n pending: System Settings > General > Software Update"
+    err=$(defaults read "$SU" DDMPersistedErrorKey 2>/dev/null | sed -n 's/.*reason = "\(.*\)";/\1/p')
+    [ -n "$err" ] && row "" "last install failed: $err"
+  else
+    yes_ "macOS updates" "none pending"
+  fi
+
+  # The app's own binary is the CLI. It is not on PATH, and the app can sit
+  # one folder down (Tailscale.localized/) after an update.
+  TS=$(command -v tailscale 2>/dev/null)
+  for a in /Applications/Tailscale.app /Applications/*/Tailscale.app; do
+    [ -n "$TS" ] && break
+    [ -x "$a/Contents/MacOS/Tailscale" ] && TS="$a/Contents/MacOS/Tailscale"
+  done
+  if [ -n "$TS" ]; then
+    tsv=$("$TS" version 2>/dev/null | head -1)
+    # TS-2026-014..017 (Tailscale SSH and Serve) are fixed in 1.104.4.
+    if awk -v a="$tsv" 'BEGIN { split(a, x, "."); split("1.104.4", y, ".");
+         for (i = 1; i <= 3; i++) { if (x[i]+0 > y[i]+0) exit 0; if (x[i]+0 < y[i]+0) exit 1 } exit 0 }'; then
+      yes_ "Tailscale" "$tsv"
+    else
+      no_ "Tailscale" "$tsv: update to 1.104.4+ (TS-2026-014..017)"
+    fi
+    "$TS" status --json 2>/dev/null | grep -q '"BackendState": "Running"' \
+      && row "  connection" "connected" || row "  connection" "not connected"
+    prefs=$("$TS" debug prefs 2>/dev/null)
+    echo "$prefs" | grep -q '"RunSSH": true' \
+      && no_ "  Tailscale SSH" "on: tailscale set --ssh=false" || yes_ "  Tailscale SSH" "off"
+    { "$TS" serve status 2>&1; "$TS" funnel status 2>&1; } | grep -qv 'No serve config' \
+      && diff_ "  Serve / Funnel" "on: tailscale serve reset" || yes_ "  Serve / Funnel" "off"
+    echo "$prefs" | grep -q '"ShieldsUp": true' \
+      && row "  shields up" "on (no incoming)" || row "  shields up" "off (policy decides)"
+    echo "$prefs" | grep -qE '"ExitNodeID": "[^"]+"' \
+      && row "  exit node" "in use" || row "  exit node" "none"
   else
     no_ "Tailscale" "brew install --cask tailscale-app"
   fi
+
+  head_ "Privacy"
+  [ "$(defaults read com.apple.assistant.support 'Assistant Enabled' 2>/dev/null)" = 0 ] \
+    && yes_ "Siri" "off" || diff_ "Siri" "on: ./macos/defaults.sh"
+  # Not an Apple-documented key: the opt-in dict holds one numeric feature
+  # flag per Apple Intelligence rollout; any 1 means it is on.
+  if defaults read com.apple.CloudSubscriptionFeatures.optIn 2>/dev/null | grep -qE '^ *"?[0-9]+"? = 1;'; then
+    diff_ "Apple Intelligence" "on: System Settings > Apple Intelligence & Siri"
+  else
+    yes_ "Apple Intelligence" "off (unofficial check)"
+  fi
+  mdutil -s / 2>/dev/null | grep -q 'Indexing enabled' \
+    && diff_ "Spotlight index" "on: ./install.sh harden" || yes_ "Spotlight index" "off"
+  [ "$(/usr/libexec/PlistBuddy -c 'Print :AppleSymbolicHotKeys:64:enabled' \
+      "$HOME/Library/Preferences/com.apple.symbolichotkeys.plist" 2>/dev/null)" = false ] \
+    && yes_ "Cmd-Space" "free for Raycast" || diff_ "Cmd-Space" "still Spotlight: ./macos/defaults.sh"
+  [ "$(defaults read com.apple.AdLib allowIdentifierForAdvertising 2>/dev/null)" = 0 ] \
+    && yes_ "ad identifier" "off" || diff_ "ad identifier" "on: ./macos/defaults.sh"
 fi
 
 # ---- homebrew ---------------------------------------------------------------

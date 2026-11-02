@@ -33,7 +33,27 @@ defaults write com.apple.AppleMultitouchTrackpad Clicking -bool true
 > The Linux box runs `linux/mac-trackpad-scroll.sh` to force it *on*. The two
 > configs disagree on purpose — do not "fix" one to match the other.
 
-## Not set on this machine
+## Beyond the captured values
 
-Dock, Finder, and screenshot settings are all stock. If you ever change them,
-re-capture rather than guessing values here.
+`defaults.sh` also sets Finder, Dock, screenshot, Siri, Spotlight-shortcut
+and ad settings. They are choices, not a capture. Run
+`./macos/defaults.sh --dry` to see which ones this Mac does not have yet.
+
+## Undo
+
+Each run that changes something writes
+`~/.dotfiles.backup/defaults-<timestamp>.sh` with the old values. Restore with:
+
+```bash
+./macos/defaults.sh --undo ~/.dotfiles.backup/defaults-<timestamp>.sh
+```
+
+`./install.sh harden --undo` reverses the sudo items (Spotlight index,
+firewall, screen lock, sshd, Touch ID) one by one.
+
+## Not scriptable without MDM
+
+- **Apple Intelligence**: System Settings > Apple Intelligence & Siri.
+  `status.sh` reports it.
+- **File Sharing, Remote Login, Screen Sharing**: System Settings > General >
+  Sharing. The same switch turns each one back on.

@@ -7,6 +7,8 @@
 #   ./install.sh --hostname my-mac  # set the hostname too
 #   ./install.sh status             # report only; changes nothing
 #   ./install.sh harden             # macOS security settings (sudo, asks each)
+#   ./install.sh harden --undo      # reverse them, one by one
+#   ./install.sh always-on          # desk Mac reached remotely (sudo, asks each)
 #
 # Symlinks: ~/.zshrc and the rest point into this repo, so the repo is the
 # live config. Edits in ~ are git changes, and a git pull applies at once.
@@ -45,10 +47,11 @@ IS_CI="${CI:-}"
 while [ $# -gt 0 ]; do
   case "$1" in
     status)     exec ./status.sh ;;
-    harden)     exec bash macos/harden.sh ;;
+    harden)     shift; exec bash macos/harden.sh "$@" ;;
+    always-on)  shift; exec bash macos/always-on.sh "$@" ;;
     -y|--yes)   YES=1; shift ;;
     --hostname) HOSTNAME_NEW="${2:?--hostname needs a name}"; shift 2 ;;
-    -h|--help)  sed -n '3,14p' "$0"; exit 0 ;;
+    -h|--help)  sed -n '3,16p' "$0"; exit 0 ;;
     *) echo "unknown option: $1" >&2; exit 1 ;;
   esac
 done
@@ -120,12 +123,12 @@ echo
 #   5 shell      .zshrc references the plugins from step 4
 #   6 app config the apps exist only after step 3
 #   7 extensions needs the `code` binary from step 3
-#   4 dock       needs the apps from step 3 to exist
+#   4 dock       needs the apps from step 3 to exist (runs after 3)
 #   9 agents     last; independent of the rest
 # =============================================================================
 
 # ---- macOS defaults ---------------------------------------------------------
-if [ "$OS" = macos ] && ask "1/9  Apply macOS defaults (finder, dock, pointer, text input)?"; then
+if [ "$OS" = macos ] && ask "1/9  Apply macOS defaults (finder, dock, pointer, text input, siri, spotlight)?"; then
   bash macos/defaults.sh
 fi
 
@@ -183,8 +186,7 @@ npm_cooldown() {
   "$NPM" config set min-release-age 2 --location=user && ok "npm release cooldown: 2 days"
 }
 
-# This is what the old nix-darwin config did and the first bash draft did not:
-# actually install the software. The Brewfile is generated from a capture, so
+# The first bash draft skipped this: actually install the software. The Brewfile is generated from a capture, so
 # it reflects what the machine really had, not a guess.
 if [ "$OS" = macos ] && ask "3/9  Install all packages and apps from Brewfile (slow)?"; then
   # Nothing else can bootstrap Homebrew, and everything below depends on it.

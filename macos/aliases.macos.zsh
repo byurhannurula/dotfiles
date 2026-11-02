@@ -51,6 +51,11 @@ alias bo='brew outdated'
 # binary. Strips the com.apple.quarantine attribute.
 unquarantine() { sudo xattr -rd com.apple.quarantine "$@"; }
 
+# ---- restart ----------------------------------------------------------------
+# Restart that unlocks FileVault once by itself, so Tailscale comes back up on
+# a Mac no one is sitting at (macos/always-on.sh).
+alias authrestart="sudo fdesetup authrestart"
+
 # ---- mysql ------------------------------------------------------------------
 # A local /usr/local/mysql install, not the brew formula.
 alias mysql="/usr/local/mysql/bin/mysql"

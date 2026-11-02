@@ -1,0 +1,69 @@
+// Tailscale policy for the WORK tailnet (signed in with the company email).
+//
+// Template: placeholders only. Copy to work.local.hujson (git-ignored),
+// replace the emails and the work laptop's 100.x address, then paste it into
+// login.tailscale.com > Access controls. The console runs the "tests" block
+// on save and refuses a policy that fails it.
+//
+// One device: the work laptop. It is shared to the personal account
+// (Machines > work laptop > Share > you@personal.example). The share is
+// one-way: a shared machine is quarantined and cannot open connections to
+// the personal tailnet. Do not make it a mutual share.
+//
+// To cut access from the personal side: Machines > work laptop > Share >
+// revoke. That takes effect at once; this file needs no change.
+//
+// Admin console settings this file cannot hold (set them by hand):
+//   - Users: user approval ON. Anyone with a company-domain Google login can
+//     otherwise join this tailnet on their own.
+//   - Billing: opt out of the business trial so the tailnet falls back to the
+//     free plan instead of asking for payment.
+//   - Device management: device approval ON, key expiry ON
+//   - Settings: Tailnet Lock ON; auto-updates ON
+//   - Never run `tailscale up --ssh`, `tailscale serve` or `tailscale funnel`
+{
+  "hosts": {
+    "work-laptop": "100.64.0.1", // replace: `tailscale ip -4` on the work laptop
+  },
+
+  // Deny by default: anything not granted below is blocked.
+  "grants": [
+    // The work account's own devices (today only the laptop itself).
+    {
+      "src": ["you@company.example"],
+      "dst": ["autogroup:self"],
+      "ip":  ["*"],
+    },
+
+    // The personal account (phone, personal laptop) reaches the work laptop
+    // on T3 Code's port, and on OpenSSH as the way in when T3 is down.
+    // sshd is keys only (macos/harden.sh). No file sharing.
+    {
+      "src": ["you@personal.example"],
+      "dst": ["work-laptop"],
+      "ip":  ["tcp:3773", "tcp:22"],
+    },
+
+    // Screen Sharing, for the times only the GUI will do. It also listens on
+    // the office LAN, so turn it on only if you need it.
+    // {
+    //   "src": ["you@personal.example"],
+    //   "dst": ["work-laptop"],
+    //   "ip":  ["tcp:5900"],
+    // },
+  ],
+
+  // Empty on purpose: no Tailscale SSH, even if the laptop turns it on.
+  "ssh": [],
+
+  // No "funnel" node attribute, so Funnel cannot publish anything.
+  "nodeAttrs": [],
+
+  "tests": [
+    {
+      "src":    "you@personal.example",
+      "accept": ["work-laptop:3773", "work-laptop:22"],
+      "deny":   ["work-laptop:445", "work-laptop:5900"],
+    },
+  ],
+}

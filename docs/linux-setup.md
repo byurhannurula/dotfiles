@@ -104,7 +104,8 @@ The reason the box exists.
 
 ### 08 — Tailscale
 Installs the tailscale client. **Not connected here** — run
-`sudo tailscale up --ssh` once so the box is reachable over the tailnet
+`sudo tailscale up --ssh` once (Tailscale 1.104.4 or later: earlier versions
+have the TS-2026-014..017 SSH flaws) so the box is reachable over the tailnet
 without exposing any port. RustDesk (module 18) works over the same tailnet.
 
 ### 09 — GitHub SSH key + commit signing

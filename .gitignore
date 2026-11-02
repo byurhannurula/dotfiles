@@ -58,3 +58,7 @@ raycast/config.json
 
 # staging area for the scripts repo — not config
 ai-dev/
+
+# Filled-in Tailscale policies: real emails and addresses. The templates in
+# tailscale/ hold placeholders only.
+tailscale/*.local.hujson

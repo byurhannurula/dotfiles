@@ -1,0 +1,87 @@
+// Tailscale policy for the PERSONAL tailnet (signed in with a personal email).
+//
+// Template: placeholders only. Copy to personal.local.hujson (git-ignored),
+// replace the email, the 100.x addresses and the home LAN range, then paste
+// it into login.tailscale.com > Access controls. The console runs the
+// "tests" block on save and refuses a policy that fails it.
+//
+// Machines:
+//   home-router   homelab: subnet router for the home LAN, exit node
+//   dev-box       Linux box, Tailscale SSH on
+//   laptop        personal laptop
+//   phone
+//   work laptop   SHARED in from the work tailnet; that tailnet's policy
+//                 decides what this side may do with it
+//
+// Admin console settings this file cannot hold (set them by hand):
+//   - Device management: device approval ON. Key expiry stays off only for
+//     home-router and the phone.
+//   - Settings: Tailnet Lock ON (home-router routes the whole home LAN, so
+//     a node added behind your back would see all of it); auto-updates ON
+//   - Every node on 1.104.4 or later (TS-2026-014..017)
+//   - No `tailscale serve` or `tailscale funnel`
+//   - Subscribe to tailscale.com/security-bulletins
+{
+  "hosts": {
+    "home-router": "100.64.0.1",      // replace: `tailscale ip -4` on each
+    "dev-box":     "100.64.0.2",
+    "laptop":      "100.64.0.3",
+    "home-lan":    "192.168.1.0/24",  // replace: the route home-router advertises
+  },
+
+  // Deny by default: anything not granted below is blocked.
+  "grants": [
+    // T3 Code on any of your machines. T3 picks another port in web mode
+    // when 3773 is taken; pin it with T3CODE_PORT=3773 if the phone fails.
+    {
+      "src": ["you@personal.example"],
+      "dst": ["autogroup:self"],
+      "ip":  ["tcp:3773"],
+    },
+
+    // Dev box: ssh (Tailscale SSH now, OpenSSH later; both use 22) and the
+    // dev servers you open from the phone or laptop.
+    {
+      "src": ["you@personal.example"],
+      "dst": ["dev-box"],
+      "ip":  ["tcp:22", "tcp:3000-9999"],
+    },
+
+    // Homelab: everything behind the subnet router (homelab web UIs etc.).
+    {
+      "src": ["you@personal.example"],
+      "dst": ["home-lan"],
+      "ip":  ["*"],
+    },
+
+    // Exit node: internet traffic through home-router.
+    {
+      "src": ["you@personal.example"],
+      "dst": ["autogroup:internet"],
+      "ip":  ["*"],
+    },
+  ],
+
+  // Tailscale SSH, for dev-box only (the one node that runs it).
+  // nonroot: no ssh as root; TS-2026-009 was a root-lookup bug.
+  // Replace with "ssh": [] once dev-box uses OpenSSH with keys.
+  "ssh": [
+    {
+      "action": "accept",
+      "src":    ["you@personal.example"],
+      "dst":    ["autogroup:self"],
+      "users":  ["autogroup:nonroot"],
+    },
+  ],
+
+  // No "funnel" node attribute, so Funnel cannot publish anything.
+  "nodeAttrs": [],
+
+  "tests": [
+    {
+      "src":    "you@personal.example",
+      "accept": ["dev-box:22", "laptop:3773", "home-lan:8006"],
+      "deny":   ["laptop:22", "laptop:445", "laptop:5900", "home-router:22"],
+    },
+  ],
+}
