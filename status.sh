@@ -190,7 +190,7 @@ if [ "$OS" = macos ]; then
       no_ "Tailscale" "${tsv:-unknown}: update to 1.104.4+ (TS-2026-014..017)"
     fi
     if ! ts_running; then
-      diff_ "  app" "not running: open Tailscale once and allow its extension"
+      row "  state" "not running (optional; set it up when you need remote access)"
     else
       ts_run status --json | grep -q '"BackendState": "Running"' \
         && row "  connection" "connected" || row "  connection" "not connected"
