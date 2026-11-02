@@ -171,7 +171,7 @@ Claude Code permissions (`claude/settings.json`):
 | Mobile | cocoapods, fvm, gradle |
 | Cloud | podman, azure-cli, cloudflared, terraform, stripe |
 | Media | ffmpeg, graphicsmagick, poppler |
-| Misc | redis, watchman, mprocs, mole, otel-gui |
+| Misc | redis, watchman, dekit (was mprocs), mole, otel-gui |
 
 ### Apps
 

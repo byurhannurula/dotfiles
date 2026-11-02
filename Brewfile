@@ -115,7 +115,7 @@ brew "poppler"
 # ---- misc -------------------------------------------------------------------
 brew "redis"
 brew "watchman"
-brew "mprocs"
+brew "dekit"                 # formerly mprocs
 brew "mole"
 brew "metafab/tap/otel-gui", trusted: true
 
