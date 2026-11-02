@@ -4,6 +4,7 @@
 #
 #   ./install.sh always-on                 # or: bash macos/always-on.sh
 #   ./install.sh always-on --undo FILE     # restore what a run changed
+#   ./install.sh always-on --dry           # list what it would ask; changes nothing
 #
 # For the work laptop that stays at the office and is driven over Tailscale.
 # Not for a laptop you carry: it stops sleep while on the charger.
@@ -25,17 +26,40 @@ FAILED=0
 
 [ "$(uname -s)" = Darwin ] || { echo "macOS only" >&2; exit 1; }
 
-if [ "${1:-}" = --undo ]; then
-  f="${2:?--undo needs the file path that a run printed}"
-  [ -f "$f" ] || { echo "no such file: $f" >&2; exit 1; }
-  say "restoring from $f"
-  bash "$f" && ok "restored" || { fail "some settings did not restore"; exit 1; }
+ARGS="$*"
+DRY=0; UNDO_FROM=""
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --dry)  DRY=1; shift ;;
+    --undo) UNDO_FROM="${2:?--undo needs the file path that a run printed}"; shift 2 ;;
+    *) echo "unknown option: $1" >&2; exit 1 ;;
+  esac
+done
+
+# shellcheck source=../lib/log.sh
+. ../lib/log.sh
+start_log always-on "$ARGS"
+
+if [ -n "$UNDO_FROM" ]; then
+  [ -f "$UNDO_FROM" ] || { echo "no such file: $UNDO_FROM" >&2; exit 1; }
+  if [ "$DRY" -eq 1 ]; then
+    say "dry run: would run these lines from $UNDO_FROM"
+    grep -v '^#' "$UNDO_FROM" | sed 's/^/    /'
+    exit 0
+  fi
+  say "restoring from $UNDO_FROM"
+  bash "$UNDO_FROM" && ok "restored" || { fail "some settings did not restore"; exit 1; }
   exit 0
 fi
 
-[ -t 0 ] || { echo "needs a terminal: every item asks first" >&2; exit 1; }
+[ "$DRY" -eq 1 ] || [ -t 0 ] || { echo "needs a terminal: every item asks first" >&2; exit 1; }
 
+# A dry run answers no to everything, so nothing can change.
 ask() {
+  if [ "$DRY" -eq 1 ]; then
+    printf '  (dry) would ask: %s\n' "$1"
+    return 1
+  fi
   printf '  %s [y/N] ' "$1"
   read -r a
   case "$a" in [yY]*) return 0 ;; *) return 1 ;; esac
@@ -50,8 +74,12 @@ undo_line() {
   printf '%s\n' "$1" >> "$UNDO"
 }
 
-ask "This Mac stays at a desk on its own charger and is reached remotely?" \
-  || { echo "  nothing changed"; exit 0; }
+if [ "$DRY" -eq 1 ]; then
+  say "dry run: nothing changes"
+else
+  ask "This Mac stays at a desk on its own charger and is reached remotely?" \
+    || { echo "  nothing changed"; exit 0; }
+fi
 
 # ---- sleep on the charger ---------------------------------------------------
 # -c is the charger profile only. On battery (a power cut) the Mac still

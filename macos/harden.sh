@@ -4,6 +4,8 @@
 #
 #   ./install.sh harden            # or: bash macos/harden.sh
 #   ./install.sh harden --undo     # reverse items one by one (asks each)
+#   ./install.sh harden --dry      # list what it would ask; changes nothing
+#                                  # (also with --undo)
 #
 # Separate from install.sh: these change system files and need sudo, and a
 # machine that later gets MDM should get them from there instead. Each item
@@ -24,14 +26,34 @@ warn() { printf '\033[0;33m!\033[0m %s\n' "$1"; }
 fail() { printf '\033[0;31m✗\033[0m %s\n' "$1"; FAILED=1; }
 FAILED=0
 
-[ "$(uname -s)" = Darwin ] || { echo "macOS only" >&2; exit 1; }
-[ -t 0 ] || { echo "needs a terminal: every item asks first" >&2; exit 1; }
+UNDO=0; DRY=0
+for arg in "$@"; do
+  case "$arg" in
+    --undo) UNDO=1 ;;
+    --dry)  DRY=1 ;;
+    *) echo "unknown option: $arg" >&2; exit 1 ;;
+  esac
+done
 
+[ "$(uname -s)" = Darwin ] || { echo "macOS only" >&2; exit 1; }
+[ "$DRY" -eq 1 ] || [ -t 0 ] || { echo "needs a terminal: every item asks first" >&2; exit 1; }
+
+# shellcheck source=../lib/log.sh
+. ../lib/log.sh
+start_log harden "$@"
+
+# A dry run answers no to everything, so nothing can change. Every "would
+# ask" line is an item not in place yet.
 ask() {
+  if [ "$DRY" -eq 1 ]; then
+    printf '  (dry) would ask: %s\n' "$1"
+    return 1
+  fi
   printf '  %s [y/N] ' "$1"
   read -r a
   case "$a" in [yY]*) return 0 ;; *) return 1 ;; esac
 }
+[ "$DRY" -eq 1 ] && say "dry run: nothing changes"
 
 FW=/usr/libexec/ApplicationFirewall/socketfilterfw
 SSHD_DROPIN=/etc/ssh/sshd_config.d/010-hardening.conf
@@ -40,7 +62,7 @@ lock_delay() { sysadminctl -screenLock status 2>&1 | grep -oE 'immediate|off|[0-
 
 # ---- undo -------------------------------------------------------------------
 # Each item asks only when it is currently on, newest items first.
-if [ "${1:-}" = --undo ]; then
+if [ "$UNDO" -eq 1 ]; then
   say "undo: each item asks first, default is no"
   if ! mdutil -s / 2>/dev/null | grep -q 'Indexing enabled' \
      && ask "Turn Spotlight indexing back on? (rebuilds the index in the background)"; then
@@ -73,7 +95,9 @@ fi
 if fdesetup status | grep -q 'FileVault is On'; then
   ok "FileVault is on"
 elif ask "Turn on FileVault? (prints a recovery key once; save it in your password manager)"; then
-  sudo fdesetup enable -user "$USER" || fail "fdesetup failed"
+  # To the terminal only: the recovery key must not land in the log file.
+  # shellcheck disable=SC2024  # /dev/tty needs no root
+  sudo fdesetup enable -user "$USER" >/dev/tty 2>&1 || fail "fdesetup failed"
 fi
 
 # ---- firewall ---------------------------------------------------------------

@@ -3,7 +3,7 @@
 # ssh-setup.sh — SSH key, GitHub and commit signing for this machine.
 #
 #   ./ssh-setup.sh               guided setup; asks before every step
-#   ./ssh-setup.sh status        report only; changes nothing
+#   ./ssh-setup.sh status        report only; changes nothing (the dry run)
 #   ./ssh-setup.sh github        add this machine's key to GitHub
 #   ./ssh-setup.sh allow [FILE]  let another machine log in here with its key
 #   ./ssh-setup.sh -h            this help
@@ -27,6 +27,10 @@ warn() { printf '\033[0;33m!\033[0m %s\n' "$1"; }
 fail() { printf '\033[0;31m✗\033[0m %s\n' "$1"; FAILED=1; }
 step() { printf '\n\033[1m%s\033[0m\n' "$1"; }
 FAILED=0
+
+# shellcheck source=lib/log.sh
+. lib/log.sh
+start_log ssh-setup "$@"
 
 case "$(uname -s)" in
   Darwin) OS=macos ;;
@@ -270,7 +274,8 @@ gh_add() {   # gh_add <authentication|signing>
   esac
   warn "gh could not add the $1 key: it needs more permission"
   if ask "Run 'gh auth refresh' to grant it? (opens the browser)"; then
-    gh auth refresh -h github.com -s admin:public_key,admin:ssh_signing_key \
+    # On the terminal: gh only runs its login flow when stdout is one.
+    gh auth refresh -h github.com -s admin:public_key,admin:ssh_signing_key </dev/tty >/dev/tty 2>&1 \
       && gh ssh-key add "$KEY.pub" --title "$HOST" --type "$1" >/dev/null \
       && ok "added to GitHub as a $1 key ($HOST)" || fail "still could not add the $1 key"
   else
@@ -507,7 +512,7 @@ guided() {
 
 case "${1:-}" in
   "")         guided ;;
-  status)     status ;;
+  status|--dry) status ;;
   github)     need_tty; pick_key && { SIGN=0; ask "Also as a signing key?" && SIGN=1; github; } ;;
   allow)      need_tty; allow "${2:-}" ;;
   -h|--help)  usage ;;

@@ -24,6 +24,10 @@ case "${1:-}" in
   --undo) UNDO_FROM="${2:?--undo needs the file path that a run printed}" ;;
 esac
 
+# shellcheck source=../lib/log.sh
+. "$(dirname "$0")/../lib/log.sh"
+start_log defaults "$@"
+
 UNDO="$HOME/.dotfiles.backup/defaults-$(date +%Y%m%d_%H%M%S).sh"
 undo_line() {
   [ "$DRY" -eq 1 ] && return 0

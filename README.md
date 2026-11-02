@@ -31,6 +31,11 @@ cd ~/dev/dotfiles
 ./install.sh ssh        # SSH key, GitHub upload, commit signing (asks each)
 ```
 
+Try any system script first with `--dry`: it lists what it would ask and
+changes nothing (`./install.sh harden --dry`, `./install.sh always-on --dry`,
+`./macos/defaults.sh --dry`, `./install.sh ssh status`). Every run, dry or
+real, keeps a log in `~/.dotfiles.backup/logs/`.
+
 `install.sh` finds macOS or Linux from `uname` and picks the right files.
 Other options: `-y` accepts every group, `--hostname my-mac` sets the hostname.
 
@@ -82,13 +87,11 @@ linux/
   aliases.linux.zsh     apt, systemd, ss
   packages.txt          apt packages
   input/                gestures, Mac-style keys, natural scrolling
+lib/log.sh              copies each script run to ~/.dotfiles.backup/logs/
 claude/                 CLAUDE.md, settings.json, statusline, hooks/
 tailscale/              policy templates for the personal and work tailnets
 docs/                   linux-setup.md
 ```
-
-Older config (fish, iTerm, the old VS Code setup, every earlier `.zshrc`) is
-on the [`legacy`](../../tree/legacy) branch.
 
 ## What install.sh does, in order
 

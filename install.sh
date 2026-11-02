@@ -60,6 +60,10 @@ done
 
 BACKUP="$HOME/.dotfiles.backup/$(date +%Y%m%d_%H%M%S)"
 
+# shellcheck source=lib/log.sh
+. lib/log.sh
+start_log install "$@"
+
 # Obsidian keeps its config inside the vault. Override if yours lives elsewhere.
 OBSIDIAN_VAULT="${OBSIDIAN_VAULT:-$HOME/Documents/obsidian/bbn}"
 
